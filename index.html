@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SCPタグ翻訳ツール</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS部分（ダークモード・レスポンシブ・ローディング表示など） -->
+    <style>
+      /* ベーススタイル */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        line-height: 1.4;
+        background-color: #f8f8f8;
+        color: #333;
+      }
+
+      header {
+        padding: 1rem;
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #ccc;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      select {
+        padding: 0.25rem;
+        font-size: 0.9rem;
+      }
+
+      textarea {
+        width: 100%;
+        height: 8rem;
+        box-sizing: border-box;
+        resize: vertical;
+        font-family: monospace;
+        font-size: 0.95rem;
+        padding: 0.5rem;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin: 0.5rem 0;
+      }
+
+      .button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+      }
+
+      /* ログ表示欄 */
+      #logArea {
+        width: 100%;
+        height: 6rem;
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        background-color: #f7f7f7;
+        color: #444;
+      }
+
+      /* ローディング表示（テキスト＋アニメーション） */
+      #loadingIndicator {
+        display: none; /* 初期は非表示 */
+        font-size: 0.95rem;
+        color: #333;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+      }
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #ccc;
+        border-top: 3px solid #66a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ダークモード */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #222;
+          color: #eee;
+        }
+        header,
+        .container {
+          background-color: #333;
+        }
+        select,
+        textarea {
+          background-color: #555;
+          color: #eee;
+          border: 1px solid #aaa;
+        }
+        .button {
+          background-color: #444;
+          color: #eee;
+          border: 1px solid #aaa;
+        }
+        #logArea {
+          background-color: #444;
+          color: #ccc;
+        }
+        #loadingIndicator {
+          color: #ccc;
+        }
+        .spinner {
+          border: 3px solid #aaa;
+          border-top: 3px solid #fff;
+        }
+      }
+
+      /* スマホなど画面幅が狭い場合: 縦配置に切り替え */
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>SCPタグ翻訳ツール</h1>
+    </header>
+
+    <div class="container">
+      <!-- 左カラム: 翻訳元 -->
+      <div class="column">
+        <label for="sourceLang">翻訳元言語</label>
+        <select id="sourceLang">
+          <!-- 現状は英語(en)のみ -->
+          <option value="en" selected>English (en)</option>
+
+          <!-- 以下は将来のための候補。コメントアウトして未表示にする。
+        <option value="cn">中文 (cn)</option>
+        <option value="cs">Česky (cs)</option>
+        <option value="de">Deutsch (de)</option>
+        <option value="es">Español (es)</option>
+        <option value="fr">Français (fr)</option>
+        <option value="it">Italiano (it)</option>
+        <option value="jp">日本語 (jp)</option>
+        <option value="ko">한국어 (ko)</option>
+        <option value="pl">Polski (pl)</option>
+        <option value="pt">Português (pt)</option>
+        <option value="ru">Русский (ru)</option>
+        <option value="th">ภาษาไทย (th)</option>
+        <option value="ua">Українська (ua)</option>
+        <option value="vn">Tiếng Việt (vn)</option>
+        <option value="zh">繁體中文 (zh)</option>
+        --></select>
+
+        <textarea id="sourceText" placeholder="翻訳したいタグを入力"></textarea>
+      </div>
+
+      <!-- 右カラム: 翻訳先 -->
+      <div class="column">
+        <label for="targetLang">翻訳先言語</label>
+        <select id="targetLang">
+          <!-- 現状は日本語(jp)のみ -->
+          <option value="jp" selected>日本語 (jp)</option>
+
+          <!-- 今後の拡張用にコメントアウト
+        <option value="en">English (en)</option>
+        <option value="cn">中文 (cn)</option>
+        <option value="cs">Česky (cs)</option>
+        <option value="de">Deutsch (de)</option>
+        <option value="es">Español (es)</option>
+        <option value="fr">Français (fr)</option>
+        <option value="it">Italiano (it)</option>
+        <option value="ko">한국어 (ko)</option>
+        <option value="pl">Polski (pl)</option>
+        <option value="pt">Português (pt)</option>
+        <option value="ru">Русский (ru)</option>
+        <option value="th">ภาษาไทย (th)</option>
+        <option value="ua">Українська (ua)</option>
+        <option value="vn">Tiếng Việt (vn)</option>
+        <option value="zh">繁體中文 (zh)</option>
+        --></select>
+
+        <textarea
+          id="targetText"
+          readonly
+          placeholder="翻訳結果が表示されます"
+        ></textarea>
+
+        <div class="buttons">
+          <!-- 翻訳元/先 入れ替えボタン -->
+          <button class="button" id="btnSwap">入れ替え</button>
+          <!-- コピー ボタン -->
+          <button class="button" id="btnCopy">コピー</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ログ表示欄 -->
+    <div class="container">
+      <div class="column">
+        <label>ログ</label>
+        <div id="logArea" aria-readonly="true"></div>
+
+        <!-- ローディング表示エリア -->
+        <div id="loadingIndicator">
+          <div class="spinner"></div>
+          <span>辞書を読み込んでいます...</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      const dictionaryCache = {}; // ペアごとの辞書をキャッシュ
+      const loadingIndicator = document.getElementById("loadingIndicator");
+
+      window.addEventListener("DOMContentLoaded", () => {
+        setupUI();
+        doTranslate(); // 初期表示
+      });
+
+      function setupUI() {
+        document
+          .getElementById("sourceLang")
+          .addEventListener("change", doTranslate);
+        document
+          .getElementById("targetLang")
+          .addEventListener("change", doTranslate);
+        document
+          .getElementById("sourceText")
+          .addEventListener("input", doTranslate);
+
+        // 入れ替えボタン
+        document.getElementById("btnSwap").addEventListener("click", () => {
+          swapLanguages();
+          doTranslate();
+        });
+
+        // コピー ボタン
+        document
+          .getElementById("btnCopy")
+          .addEventListener("click", copyResult);
+      }
+
+      /**
+       * メインの翻訳処理
+       */
+      function doTranslate() {
+        clearLog();
+
+        const srcLang = document.getElementById("sourceLang").value;
+        const tgtLang = document.getElementById("targetLang").value;
+        const mapKey = `${srcLang}_to_${tgtLang}`;
+        const inputStr = document.getElementById("sourceText").value.trim();
+
+        // 入力が空ならクリア
+        if (!inputStr) {
+          document.getElementById("targetText").value = "";
+          return;
+        }
+
+        // ローディング表示
+        showLoading(true);
+
+        // キャッシュ済みか確認
+        if (dictionaryCache[mapKey]) {
+          doTranslationWithDictionary(dictionaryCache[mapKey], inputStr);
+          showLoading(false);
+        } else {
+          // 該当ファイルを読み込み
+          const url = `./dictionaries/${mapKey}.json`;
+
+          fetch(url)
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`辞書ファイルがありません (${mapKey}.json)`);
+              }
+              return res.json();
+            })
+            .then((data) => {
+              dictionaryCache[mapKey] = data;
+              doTranslationWithDictionary(data, inputStr);
+            })
+            .catch((err) => {
+              setLog(
+                `【エラー】未対応ペア (${mapKey}) です。辞書ファイルの読み込みに失敗。`
+              );
+              console.error(err);
+              document.getElementById("targetText").value = "";
+            })
+            .finally(() => {
+              showLoading(false);
+            });
+        }
+      }
+
+      /**
+       * ローディング表示ON/OFF
+       */
+      function showLoading(isLoading) {
+        loadingIndicator.style.display = isLoading ? "flex" : "none";
+      }
+
+      /**
+       * 指定の辞書データで実翻訳を行う
+       */
+      function doTranslationWithDictionary(dictionary, inputStr) {
+        // スペース区切り＆連結タグ対応
+        const tokens = inputStr.split(/\s+/);
+        let allTags = [];
+        tokens.forEach((token) => {
+          const splitted = splitConcatenatedTags(token, dictionary);
+          allTags = allTags.concat(splitted);
+        });
+
+        // 結果をまとめる
+        const translatedList = [];
+        const skippedList = [];
+
+        allTags.forEach((tag) => {
+          if (!dictionary.hasOwnProperty(tag)) {
+            skippedList.push(`${tag} (未定義)`);
+          } else {
+            if (dictionary[tag] === null) {
+              // 非使用タグ
+              skippedList.push(`${tag} (非使用タグ)`);
+            } else {
+              translatedList.push(dictionary[tag]);
+            }
+          }
+        });
+
+        // 出力
+        document.getElementById("targetText").value = translatedList.join(" ");
+
+        // ログ表示
+        if (skippedList.length > 0) {
+          setLog(
+            "【注意】以下のタグはスキップされました：\n" +
+              skippedList.join("\n")
+          );
+        }
+      }
+
+      /**
+       * 連結タグの最長一致分割
+       */
+      function splitConcatenatedTags(token, dictionary) {
+        const dictKeys = Object.keys(dictionary).sort(
+          (a, b) => b.length - a.length
+        );
+
+        let result = [];
+        let remaining = token;
+
+        while (remaining.length > 0) {
+          let matched = false;
+          for (let i = 0; i < dictKeys.length; i++) {
+            const key = dictKeys[i];
+            if (remaining.startsWith(key)) {
+              result.push(key);
+              remaining = remaining.slice(key.length);
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) {
+            // 未定義の残り部分
+            result.push(remaining);
+            remaining = "";
+          }
+        }
+        return result;
+      }
+
+      /**
+       * 翻訳元/翻訳先を入れ替える
+       */
+      function swapLanguages() {
+        const sourceSelect = document.getElementById("sourceLang");
+        const targetSelect = document.getElementById("targetLang");
+
+        const tmp = sourceSelect.value;
+        sourceSelect.value = targetSelect.value;
+        targetSelect.value = tmp;
+      }
+
+      /**
+       * コピー機能
+       */
+      function copyResult() {
+        const text = document.getElementById("targetText").value;
+        if (!text) return;
+
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            setLog("翻訳結果をコピーしました。");
+          })
+          .catch((err) => {
+            setLog("コピーに失敗しました: " + err);
+          });
+      }
+
+      /**
+       * ログをクリア
+       */
+      function clearLog() {
+        document.getElementById("logArea").textContent = "";
+      }
+
+      /**
+       * ログを追加表示
+       */
+      function setLog(message) {
+        const logArea = document.getElementById("logArea");
+        if (logArea.textContent) {
+          logArea.textContent += "\n" + message;
+        } else {
+          logArea.textContent = message;
+        }
+      }
+    </script>
+  </body>
+</html>
