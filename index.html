@@ -28,11 +28,16 @@
         font-size: 1.25rem;
       }
 
+      /* レイアウトを中央に固定しつつ、はみ出さないようにする */
       .container {
+        width: 100%;
+        max-width: 900px; /* 必要に応じて調整 */
+        margin: 0 auto;
         display: flex;
         flex-direction: row;
         gap: 1rem;
         padding: 1rem;
+        box-sizing: border-box;
       }
 
       .column {
@@ -40,6 +45,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        min-width: 0; /* フレックスで縮めた際、テキスト領域がはみ出さないように */
       }
 
       label {
@@ -87,6 +93,7 @@
         overflow-y: auto;
         background-color: #f7f7f7;
         color: #444;
+        box-sizing: border-box;
       }
 
       /* ローディング表示（テキスト＋アニメーション） */
@@ -163,15 +170,15 @@
       <h1>SCPタグ翻訳ツール</h1>
     </header>
 
+    <!-- メインの2カラム: 翻訳元 / 翻訳先 -->
     <div class="container">
       <!-- 左カラム: 翻訳元 -->
       <div class="column">
         <label for="sourceLang">翻訳元言語</label>
         <select id="sourceLang">
-          <!-- 現状は英語(en)のみ -->
+          <!-- 今は英語(en)のみ対応 -->
           <option value="en" selected>English (en)</option>
-
-          <!-- 以下は将来のための候補。コメントアウトして未表示にする。
+          <!-- 以下は将来用。コメントアウトしておく
         <option value="cn">中文 (cn)</option>
         <option value="cs">Česky (cs)</option>
         <option value="de">Deutsch (de)</option>
@@ -196,10 +203,9 @@
       <div class="column">
         <label for="targetLang">翻訳先言語</label>
         <select id="targetLang">
-          <!-- 現状は日本語(jp)のみ -->
+          <!-- 今は日本語(jp)のみ対応 -->
           <option value="jp" selected>日本語 (jp)</option>
-
-          <!-- 今後の拡張用にコメントアウト
+          <!-- 以下は将来用
         <option value="en">English (en)</option>
         <option value="cn">中文 (cn)</option>
         <option value="cs">Česky (cs)</option>
@@ -224,8 +230,6 @@
         ></textarea>
 
         <div class="buttons">
-          <!-- 翻訳元/先 入れ替えボタン -->
-          <button class="button" id="btnSwap">入れ替え</button>
           <!-- コピー ボタン -->
           <button class="button" id="btnCopy">コピー</button>
         </div>
@@ -233,7 +237,7 @@
     </div>
 
     <!-- ログ表示欄 -->
-    <div class="container">
+    <div class="container" style="flex-direction: column">
       <div class="column">
         <label>ログ</label>
         <div id="logArea" aria-readonly="true"></div>
@@ -254,7 +258,7 @@
 
       window.addEventListener("DOMContentLoaded", () => {
         setupUI();
-        doTranslate(); // 初期表示
+        doTranslate(); // 初期ロード時に翻訳実行
       });
 
       function setupUI() {
@@ -268,12 +272,6 @@
           .getElementById("sourceText")
           .addEventListener("input", doTranslate);
 
-        // 入れ替えボタン
-        document.getElementById("btnSwap").addEventListener("click", () => {
-          swapLanguages();
-          doTranslate();
-        });
-
         // コピー ボタン
         document
           .getElementById("btnCopy")
@@ -286,28 +284,28 @@
       function doTranslate() {
         clearLog();
 
+        // 一旦ローディング表示をON
+        showLoading(true);
+
         const srcLang = document.getElementById("sourceLang").value;
         const tgtLang = document.getElementById("targetLang").value;
         const mapKey = `${srcLang}_to_${tgtLang}`;
-        const inputStr = document.getElementById("sourceText").value.trim();
 
-        // 入力が空ならクリア
+        const inputStr = document.getElementById("sourceText").value.trim();
         if (!inputStr) {
+          // 入力が空の場合は翻訳結果もクリアし、ローディングOFF
           document.getElementById("targetText").value = "";
+          showLoading(false);
           return;
         }
 
-        // ローディング表示
-        showLoading(true);
-
-        // キャッシュ済みか確認
+        // すでにキャッシュ済みかチェック
         if (dictionaryCache[mapKey]) {
           doTranslationWithDictionary(dictionaryCache[mapKey], inputStr);
           showLoading(false);
         } else {
-          // 該当ファイルを読み込み
+          // 辞書ファイルを読み込み
           const url = `./dictionaries/${mapKey}.json`;
-
           fetch(url)
             .then((res) => {
               if (!res.ok) {
@@ -327,20 +325,14 @@
               document.getElementById("targetText").value = "";
             })
             .finally(() => {
+              // ローディング表示OFF
               showLoading(false);
             });
         }
       }
 
       /**
-       * ローディング表示ON/OFF
-       */
-      function showLoading(isLoading) {
-        loadingIndicator.style.display = isLoading ? "flex" : "none";
-      }
-
-      /**
-       * 指定の辞書データで実翻訳を行う
+       * 辞書を使って実翻訳
        */
       function doTranslationWithDictionary(dictionary, inputStr) {
         // スペース区切り＆連結タグ対応
@@ -351,7 +343,6 @@
           allTags = allTags.concat(splitted);
         });
 
-        // 結果をまとめる
         const translatedList = [];
         const skippedList = [];
 
@@ -368,10 +359,7 @@
           }
         });
 
-        // 出力
         document.getElementById("targetText").value = translatedList.join(" ");
-
-        // ログ表示
         if (skippedList.length > 0) {
           setLog(
             "【注意】以下のタグはスキップされました：\n" +
@@ -384,6 +372,7 @@
        * 連結タグの最長一致分割
        */
       function splitConcatenatedTags(token, dictionary) {
+        // 「長いキーを優先」マッチ
         const dictKeys = Object.keys(dictionary).sort(
           (a, b) => b.length - a.length
         );
@@ -403,7 +392,7 @@
             }
           }
           if (!matched) {
-            // 未定義の残り部分
+            // どのキーにもマッチしない -> 残りは未定義
             result.push(remaining);
             remaining = "";
           }
@@ -412,15 +401,10 @@
       }
 
       /**
-       * 翻訳元/翻訳先を入れ替える
+       * ローディング表示の制御
        */
-      function swapLanguages() {
-        const sourceSelect = document.getElementById("sourceLang");
-        const targetSelect = document.getElementById("targetLang");
-
-        const tmp = sourceSelect.value;
-        sourceSelect.value = targetSelect.value;
-        targetSelect.value = tmp;
+      function showLoading(isLoading) {
+        loadingIndicator.style.display = isLoading ? "flex" : "none";
       }
 
       /**
@@ -448,7 +432,7 @@
       }
 
       /**
-       * ログを追加表示
+       * ログにメッセージ追加
        */
       function setLog(message) {
         const logArea = document.getElementById("logArea");
