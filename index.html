@@ -5,7 +5,6 @@
     <title>SCPタグ翻訳ツール</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- CSS部分（ダークモード・レスポンシブ・ローディング表示など） -->
     <style>
       /* ベーススタイル */
       body {
@@ -29,10 +28,14 @@
       }
 
       .container {
+        width: 100%;
+        max-width: 900px; /* ログ領域のはみ出しを防止 */
+        margin: 0 auto;
         display: flex;
         flex-direction: row;
         gap: 1rem;
         padding: 1rem;
+        box-sizing: border-box;
       }
 
       .column {
@@ -40,6 +43,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        min-width: 0; /* フレックス縮小時に要素がはみ出さないように */
       }
 
       label {
@@ -87,6 +91,7 @@
         overflow-y: auto;
         background-color: #f7f7f7;
         color: #444;
+        box-sizing: border-box;
       }
 
       /* ローディング表示（テキスト＋アニメーション） */
@@ -98,6 +103,7 @@
         display: flex;
         align-items: center;
       }
+
       .spinner {
         width: 20px;
         height: 20px;
@@ -107,6 +113,7 @@
         animation: spin 1s linear infinite;
         margin-right: 8px;
       }
+
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -150,7 +157,7 @@
         }
       }
 
-      /* スマホなど画面幅が狭い場合: 縦配置に切り替え */
+      /* 画面幅が狭い場合: 縦配置に切り替え */
       @media (max-width: 768px) {
         .container {
           flex-direction: column;
@@ -163,15 +170,14 @@
       <h1>SCPタグ翻訳ツール</h1>
     </header>
 
+    <!-- メインの2カラム: 翻訳元 / 翻訳先 -->
     <div class="container">
-      <!-- 左カラム: 翻訳元 -->
       <div class="column">
         <label for="sourceLang">翻訳元言語</label>
         <select id="sourceLang">
-          <!-- 現状は英語(en)のみ -->
+          <!-- 今は英語(en)のみ対応 -->
           <option value="en" selected>English (en)</option>
-
-          <!-- 以下は将来のための候補。コメントアウトして未表示にする。
+          <!-- 将来的には以下を追加（コメントアウト中）
         <option value="cn">中文 (cn)</option>
         <option value="cs">Česky (cs)</option>
         <option value="de">Deutsch (de)</option>
@@ -192,14 +198,12 @@
         <textarea id="sourceText" placeholder="翻訳したいタグを入力"></textarea>
       </div>
 
-      <!-- 右カラム: 翻訳先 -->
       <div class="column">
         <label for="targetLang">翻訳先言語</label>
         <select id="targetLang">
-          <!-- 現状は日本語(jp)のみ -->
+          <!-- 今は日本語(jp)のみ対応 -->
           <option value="jp" selected>日本語 (jp)</option>
-
-          <!-- 今後の拡張用にコメントアウト
+          <!-- 将来的には以下を追加（コメントアウト中）
         <option value="en">English (en)</option>
         <option value="cn">中文 (cn)</option>
         <option value="cs">Česky (cs)</option>
@@ -224,8 +228,6 @@
         ></textarea>
 
         <div class="buttons">
-          <!-- 翻訳元/先 入れ替えボタン -->
-          <button class="button" id="btnSwap">入れ替え</button>
           <!-- コピー ボタン -->
           <button class="button" id="btnCopy">コピー</button>
         </div>
@@ -233,7 +235,7 @@
     </div>
 
     <!-- ログ表示欄 -->
-    <div class="container">
+    <div class="container" style="flex-direction: column">
       <div class="column">
         <label>ログ</label>
         <div id="logArea" aria-readonly="true"></div>
@@ -249,12 +251,32 @@
     <script>
       "use strict";
 
-      const dictionaryCache = {}; // ペアごとの辞書をキャッシュ
+      // 対応可能な言語支部タグ一覧
+      const recognizedLangs = [
+        "cn",
+        "cs",
+        "de",
+        "en",
+        "es",
+        "fr",
+        "it",
+        "jp",
+        "ko",
+        "pl",
+        "pt",
+        "ru",
+        "th",
+        "ua",
+        "vn",
+        "zh",
+      ];
+
+      const dictionaryCache = {}; // ペアごとの辞書キャッシュ
       const loadingIndicator = document.getElementById("loadingIndicator");
 
       window.addEventListener("DOMContentLoaded", () => {
         setupUI();
-        doTranslate(); // 初期表示
+        doTranslate(); // ページ読み込み時に1度実行
       });
 
       function setupUI() {
@@ -267,14 +289,6 @@
         document
           .getElementById("sourceText")
           .addEventListener("input", doTranslate);
-
-        // 入れ替えボタン
-        document.getElementById("btnSwap").addEventListener("click", () => {
-          swapLanguages();
-          doTranslate();
-        });
-
-        // コピー ボタン
         document
           .getElementById("btnCopy")
           .addEventListener("click", copyResult);
@@ -285,29 +299,31 @@
        */
       function doTranslate() {
         clearLog();
+        showLoading(true);
 
         const srcLang = document.getElementById("sourceLang").value;
         const tgtLang = document.getElementById("targetLang").value;
         const mapKey = `${srcLang}_to_${tgtLang}`;
         const inputStr = document.getElementById("sourceText").value.trim();
 
-        // 入力が空ならクリア
         if (!inputStr) {
+          // 入力が空のときは翻訳結果をクリアし、ローディング非表示
           document.getElementById("targetText").value = "";
+          showLoading(false);
           return;
         }
 
-        // ローディング表示
-        showLoading(true);
-
-        // キャッシュ済みか確認
+        // すでに読み込み済みかどうか
         if (dictionaryCache[mapKey]) {
-          doTranslationWithDictionary(dictionaryCache[mapKey], inputStr);
+          doTranslationWithDictionary(
+            dictionaryCache[mapKey],
+            inputStr,
+            srcLang
+          );
           showLoading(false);
         } else {
-          // 該当ファイルを読み込み
+          // 辞書ファイルをfetch
           const url = `./dictionaries/${mapKey}.json`;
-
           fetch(url)
             .then((res) => {
               if (!res.ok) {
@@ -317,11 +333,11 @@
             })
             .then((data) => {
               dictionaryCache[mapKey] = data;
-              doTranslationWithDictionary(data, inputStr);
+              doTranslationWithDictionary(data, inputStr, srcLang);
             })
             .catch((err) => {
               setLog(
-                `【エラー】未対応ペア (${mapKey}) です。辞書ファイルの読み込みに失敗。`
+                `【エラー】未対応ペア (${mapKey}) です。辞書ファイル読み込みに失敗。`
               );
               console.error(err);
               document.getElementById("targetText").value = "";
@@ -333,25 +349,20 @@
       }
 
       /**
-       * ローディング表示ON/OFF
+       * 辞書データで実際の翻訳を行う
+       * @param {object} dictionary - 翻訳用辞書
+       * @param {string} inputStr - ユーザー入力（タグ文字列）
+       * @param {string} srcLang - 翻訳元言語
        */
-      function showLoading(isLoading) {
-        loadingIndicator.style.display = isLoading ? "flex" : "none";
-      }
-
-      /**
-       * 指定の辞書データで実翻訳を行う
-       */
-      function doTranslationWithDictionary(dictionary, inputStr) {
-        // スペース区切り＆連結タグ対応
+      function doTranslationWithDictionary(dictionary, inputStr, srcLang) {
         const tokens = inputStr.split(/\s+/);
         let allTags = [];
+
         tokens.forEach((token) => {
           const splitted = splitConcatenatedTags(token, dictionary);
           allTags = allTags.concat(splitted);
         });
 
-        // 結果をまとめる
         const translatedList = [];
         const skippedList = [];
 
@@ -368,10 +379,20 @@
           }
         });
 
-        // 出力
+        // ---- 支部タグの追加（翻訳元言語をタグに含める）----
+        // 例: srcLang="en" なら "en" を出力に追加
+        if (recognizedLangs.includes(srcLang)) {
+          // 二重に入るのを避けたいなら、以下のように重複チェックをする
+          if (!translatedList.includes(srcLang)) {
+            // 先頭に追加
+            translatedList.unshift(srcLang);
+          }
+        }
+
+        // 結果をテキストエリアに表示
         document.getElementById("targetText").value = translatedList.join(" ");
 
-        // ログ表示
+        // スキップのログ
         if (skippedList.length > 0) {
           setLog(
             "【注意】以下のタグはスキップされました：\n" +
@@ -384,6 +405,7 @@
        * 連結タグの最長一致分割
        */
       function splitConcatenatedTags(token, dictionary) {
+        // まず辞書キーを長さ降順でソート
         const dictKeys = Object.keys(dictionary).sort(
           (a, b) => b.length - a.length
         );
@@ -403,24 +425,12 @@
             }
           }
           if (!matched) {
-            // 未定義の残り部分
+            // どのキーにもマッチしない -> 残り全て未定義として処理
             result.push(remaining);
             remaining = "";
           }
         }
         return result;
-      }
-
-      /**
-       * 翻訳元/翻訳先を入れ替える
-       */
-      function swapLanguages() {
-        const sourceSelect = document.getElementById("sourceLang");
-        const targetSelect = document.getElementById("targetLang");
-
-        const tmp = sourceSelect.value;
-        sourceSelect.value = targetSelect.value;
-        targetSelect.value = tmp;
       }
 
       /**
@@ -441,6 +451,13 @@
       }
 
       /**
+       * ローディング表示の制御
+       */
+      function showLoading(isLoading) {
+        loadingIndicator.style.display = isLoading ? "flex" : "none";
+      }
+
+      /**
        * ログをクリア
        */
       function clearLog() {
@@ -448,7 +465,7 @@
       }
 
       /**
-       * ログを追加表示
+       * ログにメッセージを追記
        */
       function setLog(message) {
         const logArea = document.getElementById("logArea");
