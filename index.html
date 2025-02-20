@@ -434,20 +434,65 @@
       }
 
       /**
-       * コピー機能
+       * コピー機能（フォールバック付き）
        */
       function copyResult() {
-        const text = document.getElementById("targetText").value;
+        const textArea = document.getElementById("targetText");
+        const text = textArea.value;
         if (!text) return;
 
-        navigator.clipboard
-          .writeText(text)
-          .then(() => {
-            setLog("翻訳結果をコピーしました。");
-          })
-          .catch((err) => {
-            setLog("コピーに失敗しました: " + err);
-          });
+        // 新しいClipboard APIが使えるかチェック
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => setLog("翻訳結果をコピーしました。"))
+            .catch((err) => setLog("コピーに失敗しました: " + err));
+        } else {
+          // 使えない場合はdocument.execCommand('copy')にフォールバック
+          fallbackCopyText(textArea);
+        }
+      }
+
+      /**
+       * execCommand('copy') フォールバック処理
+       */
+      function fallbackCopyText(textAreaElement) {
+        try {
+          // 現在の選択範囲を保存
+          const selection = document.getSelection();
+          const range =
+            selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+
+          // 一時的に編集可能にする（textarea が readonly なら外す）
+          const wasReadOnly = textAreaElement.hasAttribute("readonly");
+          if (wasReadOnly) {
+            textAreaElement.removeAttribute("readonly");
+          }
+
+          // テキストエリア内を全選択
+          textAreaElement.select();
+
+          // コピー実行
+          const result = document.execCommand("copy");
+          if (result) {
+            setLog("翻訳結果をコピーしました。(fallback)");
+          } else {
+            setLog("コピーに失敗しました。(fallback)");
+          }
+
+          // 選択範囲の復元
+          selection.removeAllRanges();
+          if (range) {
+            selection.addRange(range);
+          }
+
+          // 再度 readonly を付与
+          if (wasReadOnly) {
+            textAreaElement.setAttribute("readonly", true);
+          }
+        } catch (err) {
+          setLog("コピーに失敗しました: " + err);
+        }
       }
 
       /**
