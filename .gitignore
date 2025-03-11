@@ -1,3 +1,6 @@
-repomix-output.txt
+# Repomix output
 .repomixignore
 repomix.config.json
+repomix-output.txt
+repomix-output.xml
+repomix-output.md
