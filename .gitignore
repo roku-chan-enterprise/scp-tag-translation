@@ -1,3 +1,8 @@
+# Python関連の設定
+.venv/
+__pycache__/
+*.pyc
+
 # Repomix output
 .repomixignore
 repomix.config.json
