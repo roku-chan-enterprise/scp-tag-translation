@@ -10,6 +10,12 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # 取得対象のページ情報 (サイトのUnix名, ページ名)
 TARGET_PAGES = [
     ("scp-jp", "tag-list"),
+    ("scp-jp", "fragment:tag-list-basic"),
+    ("scp-jp", "fragment:tag-list-series"),
+    ("scp-jp", "fragment:tag-list-universe"),
+    ("scp-jp", "fragment:tag-list-event"),
+    ("scp-jp", "fragment:tag-list-unused"),
+    ("scp-jp", "fragment:tag-list-faq"),
     ("05command", "tech-hub-tag-list"),
 ]
 
