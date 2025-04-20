@@ -355,12 +355,21 @@
        * @param {string} srcLang - 翻訳元言語
        */
       function doTranslationWithDictionary(dictionary, inputStr, srcLang) {
+        // 入力を空白で分割して個別のタグに
         const tokens = inputStr.split(/\s+/);
         let allTags = [];
 
+        // 各タグを処理
         tokens.forEach((token) => {
-          const splitted = splitConcatenatedTags(token, dictionary);
-          allTags = allTags.concat(splitted);
+          // 単一のタグとして辞書に存在するかチェック
+          if (dictionary.hasOwnProperty(token)) {
+            // 単一のタグとして存在する場合はそのまま追加
+            allTags.push(token);
+          } else {
+            // 存在しない場合は複合タグとして分割処理
+            const splitted = splitConcatenatedTags(token, dictionary);
+            allTags = allTags.concat(splitted);
+          }
         });
 
         const translatedList = [];
@@ -405,32 +414,41 @@
        * 連結タグの最長一致分割
        */
       function splitConcatenatedTags(token, dictionary) {
-        // まず辞書キーを長さ降順でソート
-        const dictKeys = Object.keys(dictionary).sort(
-          (a, b) => b.length - a.length
-        );
-
-        let result = [];
-        let remaining = token;
-
-        while (remaining.length > 0) {
-          let matched = false;
-          for (let i = 0; i < dictKeys.length; i++) {
-            const key = dictKeys[i];
-            if (remaining.startsWith(key)) {
-              result.push(key);
-              remaining = remaining.slice(key.length);
-              matched = true;
-              break;
+        // 辞書キーをチェックしやすいようにセットに変換
+        const dictKeySet = new Set(Object.keys(dictionary));
+        
+        // 動的計画法で最適な分割を見つける
+        const n = token.length;
+        
+        // dp[i] = 位置iまでの最適な分割
+        const dp = Array(n + 1).fill(null);
+        dp[0] = [];
+        
+        for (let i = 1; i <= n; i++) {
+          for (let j = 0; j < i; j++) {
+            // 部分文字列 j から i までをチェック
+            const segment = token.substring(j, i);
+            
+            // この部分が辞書にあり、j地点までの分割が存在する場合
+            if (dictKeySet.has(segment) && dp[j] !== null) {
+              const newSplitCount = dp[j].length + 1;
+              // Prevent potential overflow or negative values
+              if (newSplitCount < 0) {
+              return; 
+              }
+              if (dp[i] === null || newSplitCount < dp[i].length) {
+              dp[i] = [...dp[j], segment];
+              }
             }
           }
-          if (!matched) {
-            // どのキーにもマッチしない -> 残り全て未定義として処理
-            result.push(remaining);
-            remaining = "";
-          }
         }
-        return result;
+        
+        // 分割できない場合は元のトークンをそのまま返す
+        if (dp[n] === null) {
+          return [token];
+        }
+        
+        return dp[n];
       }
 
       /**
