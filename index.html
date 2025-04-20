@@ -431,10 +431,15 @@
             
             // この部分が辞書にあり、j地点までの分割が存在する場合
             if (dictKeySet.has(segment) && dp[j] !== null) {
-              // より少ない分割数か、まだ何も設定されていない場合は更新
-              if (dp[i] === null || dp[j].length + 1 < dp[i].length) {
-                dp[i] = [...dp[j], segment];
+              const newSplitCount = dp[j].length + 1;
+              // Prevent potential overflow or negative values
+              if (newSplitCount < 0) {
+              return; 
               }
+              if (dp[i] === null || newSplitCount < dp[i].length) {
+              dp[i] = [...dp[j], segment];
+              }
+            }
             }
           }
         }
