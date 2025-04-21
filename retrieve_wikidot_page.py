@@ -48,14 +48,19 @@ def retrieve_and_save_page(
         # 保存ファイル名を生成 (例: scp-jp_tag-list.txt)
         # フルネーム中の':'を'_'に置換するなど、ファイル名として安全な形式にする
         safe_page_name = page_fullname.replace(":", "_").replace("/", "_")
-        output_filename = f"{site_unix_name}_{safe_page_name}.txt"
-        output_filepath = os.path.join(SCRIPT_DIR, output_filename)
+        output_filename = f"{safe_page_name}.txt"
+        # サイト名のディレクトリを作成
+        output_dir = os.path.join(SCRIPT_DIR, site_unix_name)
+        os.makedirs(output_dir, exist_ok=True)
+        output_filepath = os.path.join(output_dir, output_filename)
 
         # ファイルに保存 (UTF-8エンコーディング)
         with open(output_filepath, "w", encoding="utf-8") as f:
             f.write(page_source)
 
-        print(f"  成功: '{output_filename}' として保存しました。")
+        # 相対パスで表示
+        relative_path = os.path.relpath(output_filepath, SCRIPT_DIR)
+        print(f"  成功: '{relative_path}' として保存しました。")
         return True
 
     except exceptions.NotFoundException as e:
