@@ -1,8 +1,8 @@
 import os
 import sys
 
-import wikidot
-from wikidot.common import exceptions
+import wikidot  # type: ignore
+from wikidot.common import exceptions  # type: ignore
 
 # このスクリプトが存在するディレクトリを取得
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
