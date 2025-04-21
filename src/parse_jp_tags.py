@@ -154,8 +154,10 @@ def read_and_expand_includes(
 
 
 def parse_jp_tag_list(
-    start_filepath: str = os.path.join("wikidot_sources", "scp-jp", "tag-list.txt"),
-    output_filepath: str = "jp_tags.json",
+    start_filepath: str = os.path.join(
+        "data", "raw", "wikidot_sources", "scp-jp", "tag-list.txt"
+    ),
+    output_filepath: str = os.path.join("data", "processed", "jp_tags.json"),
 ) -> None:
     """
     日本語版タグリストファイルを解析し、タグ情報をJSON形式で出力する。

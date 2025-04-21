@@ -8,8 +8,8 @@ TagData: TypeAlias = dict[str, str | TagMeta]
 
 
 def parse_tag_list(
-    input_filepath: str = "wikidot_sources/05command/tech-hub-tag-list.txt",
-    output_filepath: str = "en_tags.json",
+    input_filepath: str = "data/raw/wikidot_sources/05command/tech-hub-tag-list.txt",
+    output_filepath: str = "data/processed/en_tags.json",
 ):
     """
     Wikidot形式のタグリストファイルを解析し、タグ情報をJSON形式で出力する。

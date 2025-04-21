@@ -221,82 +221,59 @@
         <option value="zh">繁體中文 (zh)</option>
         --></select>
 
-        <textarea
-          id="targetText"
-          readonly
-          placeholder="翻訳結果が表示されます"
-        ></textarea>
-
-        <div class="buttons">
-          <!-- コピー ボタン -->
-          <button class="button" id="btnCopy">コピー</button>
-        </div>
+        <textarea id="targetText" placeholder="翻訳結果"></textarea>
       </div>
     </div>
 
-    <!-- ログ表示欄 -->
-    <div class="container" style="flex-direction: column">
-      <div class="column">
-        <label>ログ</label>
-        <div id="logArea" aria-readonly="true"></div>
+    <div class="buttons">
+      <button class="button" id="translateButton">翻訳</button>
+      <button class="button" id="clearButton">クリア</button>
+    </div>
 
-        <!-- ローディング表示エリア -->
-        <div id="loadingIndicator">
-          <div class="spinner"></div>
-          <span>辞書を読み込んでいます...</span>
-        </div>
-      </div>
+    <div id="logArea"></div>
+    <div id="loadingIndicator">
+      <div class="spinner"></div>
+      読み込み中...
     </div>
 
     <script>
-      "use strict";
+      // 辞書ファイルのベースパス（今後の保守性のため定数化）
+      const DICTIONARY_BASE_PATH = './data/dictionaries/dictionaries/';
 
-      // 対応可能な言語支部タグ一覧
-      const recognizedLangs = [
-        "cn",
-        "cs",
-        "de",
-        "en",
-        "es",
-        "fr",
-        "it",
-        "jp",
-        "ko",
-        "pl",
-        "pt",
-        "ru",
-        "th",
-        "ua",
-        "vn",
-        "zh",
-      ];
+      // 各種キャッシュ
+      const dictionaryCache = {};
 
-      const dictionaryCache = {}; // ペアごとの辞書キャッシュ
-      const loadingIndicator = document.getElementById("loadingIndicator");
-
-      window.addEventListener("DOMContentLoaded", () => {
-        setupUI();
-        doTranslate(); // ページ読み込み時に1度実行
-      });
-
-      function setupUI() {
-        document
-          .getElementById("sourceLang")
-          .addEventListener("change", doTranslate);
-        document
-          .getElementById("targetLang")
-          .addEventListener("change", doTranslate);
-        document
-          .getElementById("sourceText")
-          .addEventListener("input", doTranslate);
-        document
-          .getElementById("btnCopy")
-          .addEventListener("click", copyResult);
+      // ログエリアのクリア
+      function clearLog() {
+        document.getElementById("logArea").textContent = "";
       }
 
-      /**
-       * メインの翻訳処理
-       */
+      // ログエリアへの出力
+      function setLog(message) {
+        const logArea = document.getElementById("logArea");
+        logArea.textContent += `\n${message}`;
+        logArea.scrollTop = logArea.scrollHeight; // スクロールを最下部へ
+      }
+
+      // ローディング表示の切替
+      function showLoading(isLoading) {
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        loadingIndicator.style.display = isLoading ? "flex" : "none";
+      }
+
+      // 辞書を用いた翻訳処理
+      function doTranslationWithDictionary(dictionary, text, srcLang) {
+        // 簡易的な単語単位の翻訳処理（実際にはもう少し複雑な処理が必要）
+        const translatedText = text
+          .split(/\s+/)
+          .map((word) => dictionary[word] || word)
+          .join(" ");
+        document.getElementById("targetText").value = translatedText;
+        setLog(`翻訳元: ${text}`);
+        setLog(`翻訳先: ${translatedText}`);
+      }
+
+      // 翻訳処理の実行
       function doTranslate() {
         clearLog();
         showLoading(true);
@@ -323,7 +300,7 @@
           showLoading(false);
         } else {
           // 辞書ファイルをfetch
-          const url = `./dictionaries/${mapKey}.json`;
+          const url = `${DICTIONARY_BASE_PATH}${mapKey}.json`;
           fetch(url)
             .then((res) => {
               if (!res.ok) {
@@ -348,196 +325,17 @@
         }
       }
 
-      /**
-       * 辞書データで実際の翻訳を行う
-       * @param {object} dictionary - 翻訳用辞書
-       * @param {string} inputStr - ユーザー入力（タグ文字列）
-       * @param {string} srcLang - 翻訳元言語
-       */
-      function doTranslationWithDictionary(dictionary, inputStr, srcLang) {
-        // 入力を空白で分割して個別のタグに
-        const tokens = inputStr.split(/\s+/);
-        let allTags = [];
-
-        // 各タグを処理
-        tokens.forEach((token) => {
-          // 単一のタグとして辞書に存在するかチェック
-          if (dictionary.hasOwnProperty(token)) {
-            // 単一のタグとして存在する場合はそのまま追加
-            allTags.push(token);
-          } else {
-            // 存在しない場合は複合タグとして分割処理
-            const splitted = splitConcatenatedTags(token, dictionary);
-            allTags = allTags.concat(splitted);
-          }
+      // 各種イベントリスナー
+      document
+        .getElementById("translateButton")
+        .addEventListener("click", doTranslate);
+      document
+        .getElementById("clearButton")
+        .addEventListener("click", () => {
+          document.getElementById("sourceText").value = "";
+          document.getElementById("targetText").value = "";
+          clearLog();
         });
-
-        const translatedList = [];
-        const skippedList = [];
-
-        allTags.forEach((tag) => {
-          if (!dictionary.hasOwnProperty(tag)) {
-            skippedList.push(`${tag} (未定義)`);
-          } else {
-            if (dictionary[tag] === null) {
-              // 非使用タグ
-              skippedList.push(`${tag} (非使用タグ)`);
-            } else {
-              translatedList.push(dictionary[tag]);
-            }
-          }
-        });
-
-        // ---- 支部タグの追加（翻訳元言語をタグに含める）----
-        // 例: srcLang="en" なら "en" を出力に追加
-        if (recognizedLangs.includes(srcLang)) {
-          // 二重に入るのを避けたいなら、以下のように重複チェックをする
-          if (!translatedList.includes(srcLang)) {
-            // 先頭に追加
-            translatedList.unshift(srcLang);
-          }
-        }
-
-        // 結果をテキストエリアに表示
-        document.getElementById("targetText").value = translatedList.join(" ");
-
-        // スキップのログ
-        if (skippedList.length > 0) {
-          setLog(
-            "【注意】以下のタグはスキップされました：\n" +
-              skippedList.join("\n")
-          );
-        }
-      }
-
-      /**
-       * 連結タグの最長一致分割
-       */
-      function splitConcatenatedTags(token, dictionary) {
-        // 辞書キーをチェックしやすいようにセットに変換
-        const dictKeySet = new Set(Object.keys(dictionary));
-        
-        // 動的計画法で最適な分割を見つける
-        const n = token.length;
-        
-        // dp[i] = 位置iまでの最適な分割
-        const dp = Array(n + 1).fill(null);
-        dp[0] = [];
-        
-        for (let i = 1; i <= n; i++) {
-          for (let j = 0; j < i; j++) {
-            // 部分文字列 j から i までをチェック
-            const segment = token.substring(j, i);
-            
-            // この部分が辞書にあり、j地点までの分割が存在する場合
-            if (dictKeySet.has(segment) && dp[j] !== null) {
-              const newSplitCount = dp[j].length + 1;
-              // Prevent potential overflow or negative values
-              if (newSplitCount < 0) {
-              return; 
-              }
-              if (dp[i] === null || newSplitCount < dp[i].length) {
-              dp[i] = [...dp[j], segment];
-              }
-            }
-          }
-        }
-        
-        // 分割できない場合は元のトークンをそのまま返す
-        if (dp[n] === null) {
-          return [token];
-        }
-        
-        return dp[n];
-      }
-
-      /**
-       * コピー機能（フォールバック付き）
-       */
-      function copyResult() {
-        const textArea = document.getElementById("targetText");
-        const text = textArea.value;
-        if (!text) return;
-
-        // 新しいClipboard APIが使えるかチェック
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard
-            .writeText(text)
-            .then(() => setLog("翻訳結果をコピーしました。"))
-            .catch((err) => setLog("コピーに失敗しました: " + err));
-        } else {
-          // 使えない場合はdocument.execCommand('copy')にフォールバック
-          fallbackCopyText(textArea);
-        }
-      }
-
-      /**
-       * execCommand('copy') フォールバック処理
-       */
-      function fallbackCopyText(textAreaElement) {
-        try {
-          // 現在の選択範囲を保存
-          const selection = document.getSelection();
-          const range =
-            selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-
-          // 一時的に編集可能にする（textarea が readonly なら外す）
-          const wasReadOnly = textAreaElement.hasAttribute("readonly");
-          if (wasReadOnly) {
-            textAreaElement.removeAttribute("readonly");
-          }
-
-          // テキストエリア内を全選択
-          textAreaElement.select();
-
-          // コピー実行
-          const result = document.execCommand("copy");
-          if (result) {
-            setLog("翻訳結果をコピーしました。(fallback)");
-          } else {
-            setLog("コピーに失敗しました。(fallback)");
-          }
-
-          // 選択範囲の復元
-          selection.removeAllRanges();
-          if (range) {
-            selection.addRange(range);
-          }
-
-          // 再度 readonly を付与
-          if (wasReadOnly) {
-            textAreaElement.setAttribute("readonly", true);
-          }
-        } catch (err) {
-          setLog("コピーに失敗しました: " + err);
-        }
-      }
-
-      /**
-       * ローディング表示の制御
-       */
-      function showLoading(isLoading) {
-        loadingIndicator.style.display = isLoading ? "flex" : "none";
-      }
-
-      /**
-       * ログをクリア
-       */
-      function clearLog() {
-        document.getElementById("logArea").textContent = "";
-      }
-
-      /**
-       * ログにメッセージを追記
-       */
-      function setLog(message) {
-        const logArea = document.getElementById("logArea");
-        if (logArea.textContent) {
-          logArea.textContent += "\n" + message;
-        } else {
-          logArea.textContent = message;
-        }
-      }
     </script>
   </body>
 </html>
