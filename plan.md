@@ -2,11 +2,11 @@
 
 ## 概要
 
-`05command_tech-hub-tag-list.txt` ファイルを解析し、SCP財団Wikiの英語版タグ情報を抽出してJSONファイル (`en_tags.json`) を作成するPythonスクリプトの計画です。
+`wikidot_sources/05command/tech-hub-tag-list.txt` ファイルを解析し、SCP財団Wikiの英語版タグ情報を抽出してJSONファイル (`en_tags.json`) を作成するPythonスクリプトの計画です。
 
 ## 処理フロー
 
-1. **ファイル読み込み:** `05command_tech-hub-tag-list.txt` ファイルの内容を読み込みます。
+1. **ファイル読み込み:** `wikidot_sources/05command/tech-hub-tag-list.txt` ファイルの内容を読み込みます。
 2. **タグ情報抽出:** ファイルを行ごとに走査し、正規表現を用いて以下の情報を抽出します。
     * **タグ名:** `* **[URL TAG_NAME]**` の形式から `TAG_NAME` を抽出します。
     * **説明文:** `--` 以降のテキストを説明文として抽出します。
@@ -18,7 +18,7 @@
 
 ```mermaid
 graph TD
-    A[開始] --> B{ファイル読み込み\n(05command_tech-hub-tag-list.txt)};
+    A[開始] --> B{ファイル読み込み\n(wikidot_sources/05command/tech-hub-tag-list.txt)};
     B --> C{行ごとに処理};
     C --> D{タグ定義行か？\n(正規表現: ^\s*\*\s*\*\*.*\*\*)};
     D -- Yes --> E{タグ名・説明抽出\n(正規表現)};

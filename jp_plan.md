@@ -7,8 +7,8 @@
 ## 処理フロー
 
 1. **ファイル群の読み込みと結合:**
-    * 起点となる `scp-jp/tag-list.txt` を読み込みます。
-    * ファイル内容を走査し、`[[include :scp-jp:fragment:FILE_NAME]]` 構文を見つけたら、対応するフラグメントファイル (`scp-jp/fragment_FILE_NAME.txt`) の内容を読み込み、元の位置に展開します。これを再帰的に行い、全てのファイル内容を結合した単一のテキストデータを生成します。
+    * 起点となる `wikidot_sources/scp-jp/tag-list.txt` を読み込みます。
+    * ファイル内容を走査し、`[[include :scp-jp:fragment:FILE_NAME]]` 構文を見つけたら、対応するフラグメントファイル (`wikidot_sources/scp-jp/fragment_FILE_NAME.txt`) の内容を読み込み、元の位置に展開します。これを再帰的に行い、全てのファイル内容を結合した単一のテキストデータを生成します。
     * 循環参照を防止するため、既に訪れたファイルのパスを記録します。
 
 2. **タグ情報抽出:** 結合されたテキストデータを行ごとに走査し、正規表現を用いて以下の情報を抽出します。
@@ -60,7 +60,7 @@
 
 ```mermaid
 graph TD
-    A[開始] --> B{ファイルリスト定義\n(scp-jp/tag-list.txt, scp-jp/fragment_*.txt)};
+    A[開始] --> B{ファイルリスト定義\n(wikidot_sources/scp-jp/tag-list.txt, wikidot_sources/scp-jp/fragment_*.txt)};
     B --> C{全ファイル内容読み込み};
     C --> D{Include展開処理\n(再帰的に全ファイルを結合)};
     D --> E{結合テキストを行ごとに処理};
