@@ -1,8 +1,8 @@
 import re
 import json
 import os
-import sys
-from typing import TypedDict, Optional, Set, List, Dict, Any, Union, cast
+# Removed unused sys import
+from typing import TypedDict, cast # Removed Set, List as they are no longer needed after type hint updates
 
 # Use a simpler approach for handling encoding errors
 def safe_print(message: str) -> None:
@@ -15,17 +15,17 @@ def safe_print(message: str) -> None:
 
 class Category(TypedDict):
     name: str
-    parent: Optional[str]
+    parent: str | None # Updated Optional[str]
     level: int
 
 class TagMeta(TypedDict):
-    related_tags: List[str]
-    see_also: List[str]
+    related_tags: list[str] # Updated List[str]
+    see_also: list[str] # Updated List[str]
 
 class TagData(TypedDict):
     name: str
     slug: str
-    name_en: Optional[str]
+    name_en: str | None # Updated Optional[str]
     description: str
     category: str
     meta: TagMeta
@@ -36,7 +36,7 @@ def create_root_category() -> Category:
 # Include構文の正規表現
 include_pattern = re.compile(r"\[\[include\s+:scp-jp:fragment:([^\]]+)\]\]")
 
-def read_and_expand_includes(filepath: str, base_dir: str = ".", visited: Optional[Set[str]] = None) -> str:
+def read_and_expand_includes(filepath: str, base_dir: str = ".", visited: set[str] | None = None) -> str: # Updated Optional[Set[str]]
     """
     指定されたファイルを読み込み、[[include]]構文を展開して内容を返す。
     循環参照を防止する。
@@ -132,9 +132,9 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
     safe_print(f"Starting to parse Japanese tag list from: {start_filepath}")
     full_content = read_and_expand_includes(start_filepath)
     safe_print(f"Expanded content size: {len(full_content)} bytes")
-    
-    tags_data: List[TagData] = []
-    current_tag: Optional[TagData] = None  # Type hint matches initialization
+
+    tags_data: list[TagData] = [] # Updated List[TagData]
+    current_tag: TagData | None = None  # Updated Optional[TagData]
 
     # 正規表現パターン - 修正版
     # セクションヘッダは "+ タイトル" または "++ タイトル" の形式
@@ -145,7 +145,7 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
     meta_pattern = re.compile(r'^\*\s+//\s*([^:]+):\s*(.*)//')
 
     current_category: Category = create_root_category()
-    stack: List[Category] = [current_category]
+    stack: list[Category] = [current_category] # Updated List[Category]
 
     tag_count = 0
     section_count = 0
@@ -212,7 +212,7 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
                 if key not in current_tag['meta']:
                     current_tag['meta'][key] = []
                 # Ensure we have a list to extend
-                meta_list = cast(List[str], current_tag['meta'].setdefault(key, []))
+                meta_list = cast(list[str], current_tag['meta'].setdefault(key, [])) # Updated cast(List[str], ...)
                 meta_list.extend(values)
 
     # 最後のタグを追加
