@@ -8,7 +8,7 @@ TagData: TypeAlias = dict[str, str | TagMeta]
 
 
 def parse_tag_list(
-    input_filepath: str = "05command_tech-hub-tag-list.txt",
+    input_filepath: str = "wikidot_sources/05command/tech-hub-tag-list.txt",
     output_filepath: str = "en_tags.json",
 ):
     """

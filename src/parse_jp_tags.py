@@ -70,7 +70,7 @@ def read_and_expand_includes(
         safe_print(f"DEBUG: Attempting to read file: {full_path}")
     except Exception:
         safe_print(
-            f"DEBUG: Attempting to read file: (path contains non-printable characters)"
+            "DEBUG: Attempting to read file: (path contains non-printable characters)"
         )
 
     if full_path in visited:
@@ -104,7 +104,7 @@ def read_and_expand_includes(
             )
         except Exception:
             safe_print(
-                f"DEBUG: Found include directive (contains non-printable characters)"
+                "DEBUG: Found include directive (contains non-printable characters)"
             )
 
         # .txt拡張子がない場合に追加（Wikidotの挙動に合わせる）
@@ -135,7 +135,7 @@ def read_and_expand_includes(
             safe_print(f"DEBUG: Resolved include path: {included_filename}")
         except Exception:
             safe_print(
-                f"DEBUG: Resolved include path (contains non-printable characters)"
+                "DEBUG: Resolved include path (contains non-printable characters)"
             )
 
         expanded_content += content[last_end:start]
@@ -154,7 +154,7 @@ def read_and_expand_includes(
 
 
 def parse_jp_tag_list(
-    start_filepath: str = os.path.join("scp-jp", "tag-list.txt"),
+    start_filepath: str = os.path.join("wikidot_sources", "scp-jp", "tag-list.txt"),
     output_filepath: str = "jp_tags.json",
 ) -> None:
     """
