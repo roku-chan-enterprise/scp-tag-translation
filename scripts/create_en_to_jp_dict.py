@@ -1,5 +1,66 @@
+import ast
 import json
 import os
+
+def check_tag_consistency():
+    """
+    テストケース・en_tags.json・en_to_jp.json のタグ整合性を検証する。
+    """
+    # 1. テストケースのタグ一覧を取得
+    test_py_path = os.path.join(os.path.dirname(__file__), '..', 'tests', 'test_translation.py')
+    with open(test_py_path, 'r', encoding='utf-8') as f:
+        test_py_code = f.read()
+    # test_translation_of_specific_tags の test_cases 辞書をASTで抽出
+    test_cases_dict = None
+    class TestCaseVisitor(ast.NodeVisitor):
+        def visit_FunctionDef(self, node):
+            if node.name == 'test_translation_of_specific_tags':
+                for n in ast.walk(node):
+                    if isinstance(n, ast.Assign):
+                        for t in n.targets:
+                            if isinstance(t, ast.Name) and t.id == 'test_cases':
+                                nonlocal test_cases_dict
+                                test_cases_dict = ast.literal_eval(n.value)
+    TestCaseVisitor().visit(ast.parse(test_py_code))
+    if test_cases_dict is None:
+        print('[整合性チェック] test_cases 辞書が test_translation.py から抽出できませんでした')
+        test_tags_set = set()
+    else:
+        test_tags_set = set(test_cases_dict.keys())
+
+    # 2. en_tags.json のタグ一覧
+    with open('en_tags.json', 'r', encoding='utf-8') as f:
+        en_tags_data = json.load(f)
+    en_tags_set = set()
+    for item in en_tags_data:
+        if isinstance(item, dict) and 'name' in item:
+            en_tags_set.add(item['name'])
+
+    # 3. 辞書のタグ一覧
+    dict_path = 'dictionaries/en_to_jp.json'
+    if os.path.exists(dict_path):
+        with open(dict_path, 'r', encoding='utf-8') as f:
+            dict_data = json.load(f)
+        dict_tags_set = set(dict_data.keys())
+    else:
+        dict_tags_set = set()
+
+    # 4. 差分チェック
+    missing_in_en_tags = test_tags_set - en_tags_set
+    missing_in_dict = en_tags_set - dict_tags_set
+    missing_in_dict_from_test = test_tags_set - dict_tags_set
+
+    if missing_in_en_tags:
+        print(f'[整合性チェック] テストケースにあるが en_tags.json に無いタグ: {missing_in_en_tags}')
+    if missing_in_dict:
+        print(f'[整合性チェック] en_tags.json にあるが dictionaries/en_to_jp.json に無いタグ: {missing_in_dict}')
+    if missing_in_dict_from_test:
+        print(f'[整合性チェック] テストケースにあるが dictionaries/en_to_jp.json に無いタグ: {missing_in_dict_from_test}')
+    if not (missing_in_en_tags or missing_in_dict or missing_in_dict_from_test):
+        print('[整合性チェック] テストケース・en_tags.json・en_to_jp.json のタグは全て整合しています')
+
+# スクリプトの最初で必ず実行
+check_tag_consistency()
 
 # Define file paths
 en_tags_path = 'en_tags.json'

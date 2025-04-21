@@ -2,6 +2,7 @@
 import json
 import pytest
 import os
+import re # re モジュールをインポート
 
 # --- Test Setup ---
 
@@ -275,3 +276,193 @@ def test_jp_tag_extraction_and_validation(filepath):
 
     assert not missing_tags, \
         f"{os.path.basename(filepath)} で見つかったが jp_tags.json にないタグ: {missing_tags}"
+
+
+# --- ENタグ抽出の新規テスト ---
+
+EN_TAGS_JSON_PATH = os.path.join(os.path.dirname(__file__), '..', 'en_tags.json')
+WIKIDOT_SOURCE_PATH = os.path.join(os.path.dirname(__file__), '..', '05command', 'tech-hub-tag-list.txt')
+
+def extract_tags_from_wikidot_source(filepath: str) -> set[str]:
+    """Wikidotソースファイルからタグ名を抽出します。"""
+    tags = set()
+    # parse_en_tags.py で使用されているパターンと同様のロジック
+    tag_pattern = re.compile(r"^\s*\*\s*\*\[https?://[^ ]+\s+([^\]]+)\]\*\*")
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            for line in f:
+                match = tag_pattern.match(line.strip())
+                if match:
+                    tags.add(match.group(1))
+    except FileNotFoundError:
+        pytest.fail(f"Wikidot source file not found at {filepath}", pytrace=False)
+    except Exception as e:
+        pytest.fail(f"Error reading Wikidot source file {filepath}: {e}", pytrace=False)
+    return tags
+
+def load_tags_from_en_json(filepath: str) -> set[str]:
+    """en_tags.json からタグ名を読み込みます。"""
+    tags = set()
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        for item in data:
+            if isinstance(item, dict) and "name" in item:
+                tags.add(item["name"])
+    except FileNotFoundError:
+        pytest.fail(f"en_tags.json not found at {filepath}", pytrace=False)
+    except json.JSONDecodeError:
+        pytest.fail(f"Error decoding JSON from {filepath}", pytrace=False)
+    except Exception as e:
+        pytest.fail(f"Unexpected error loading {filepath}: {e}", pytrace=False)
+    return tags
+
+def test_en_tag_extraction_completeness():
+    """
+    05command/tech-hub-tag-list.txt から抽出された全てのタグが
+    en_tags.json に存在するかを検証します。
+    """
+    wikidot_tags = extract_tags_from_wikidot_source(WIKIDOT_SOURCE_PATH)
+    json_tags = load_tags_from_en_json(EN_TAGS_JSON_PATH)
+
+    # WikidotソースにタグがあるのにJSONにないものを検出
+    missing_in_json = wikidot_tags - json_tags
+
+    assert not missing_in_json, \
+        f"Tags found in Wikidot source but missing in en_tags.json: {missing_in_json}"
+
+    # (オプション) JSONにタグがあるのにWikidotソースにないものを検出 (逆方向のチェック)
+    # extra_in_json = json_tags - wikidot_tags
+    # assert not extra_in_json, \
+    #     f"Tags found in en_tags.json but not in Wikidot source: {extra_in_json}"
+
+
+def test_all_testcase_tags_exist_in_en_tags_json():
+    """
+    test_translation_of_specific_tags の全タグが en_tags.json に存在するか検証。
+    """
+    # テストケースのタグ一覧
+    test_cases = {
+        "_adult": "アダルト",
+        "_cc": "_cc",
+        "_cc4": "_cc4",
+        "_cn": "cn",
+        "_de": "de",
+        "_el": "el",
+        "_genreless": "_genreless",
+        "_graveyard-shift": "_夜勤",
+        "_hu": "hu",
+        "_homo-sapiens-sidhe": "_homo-sapiens-sidhe",
+        "_id": "id",
+        "_image": "_画像",
+        "_int": "int",
+        "_it": "it",
+        "_joicl": "_joicl",
+        "_jp": "jp",
+        "_licensebox": "_ライセンスボックス",
+        "_listpages": "_listpages",
+        "_nd": "nd",
+        "_theme-temp": "_テーマ移行",
+        "_th": "th",
+        "_the-bureaucrat": "_お役人",
+        "_townhouse": "_タウンハウス",
+        "_ua": "ua",
+        "_vn": "vn",
+        "_zh": "zh",
+        "absurdism": "不条理",
+        "action": "アクション",
+        "alternate-history": "代替史",
+        "animated": "アニメーション",
+        "anomalous-event": "異常イベント",
+        "appliance-war": "家電戦争",
+        "bittersweet": "ほろ苦い",
+        "black-comedy": "ブラックコメディ",
+        "bleak": "陰鬱",
+        "body-horror": "ボディホラー",
+        "bureaucracy": "官僚制",
+        "carnivorous": "肉食",
+        "chase": "追跡",
+        "cel-shaded": "セルルック",
+        "comic": "コミック",
+        "container": "容器",
+        "correspondence": "書簡体",
+        "cosmic-horror": "コズミックホラー",
+        "crime-fiction": "犯罪フィクション",
+        "deletable": "deletable",
+        "deletion-range": "deletion-range",
+        "dragon": "ドラゴン",
+        "dystopian": "ディストピア",
+        "fantasy": "ファンタジー",
+        "first-person": "一人称",
+        "furniture": "家具",
+        "guide": "ガイド",
+        "halloween": "ハロウィン",
+        "heartwarming": "心温まる",
+        "hong-shing": "香城",
+        "horror": "ホラー",
+        "illustrated": "挿絵付き",
+        "image-editing": "画像編集",
+        "in-rewrite": "改稿中",
+        "journal": "日誌",
+        "legal": "法律",
+        "lgbtq": "lgbtq",
+        "metafiction": "メタフィクション",
+        "more-by": "著作紹介",
+        "murder-monster": "殺人モンスター",
+        "mythological": "神話",
+        "news-prompt": "ニュースプロンプト",
+        "no-dialogue": "会話なし",
+        "otherworldly": "異世界",
+        "painted": "絵画",
+        "period-piece": "時代物",
+        "phenomenon": "現象",
+        "pixel-art": "ピクセルアート",
+        "political": "政治",
+        "post-apocalyptic": "ポスト黙示録",
+        "project": "プロジェクト",
+        "recording": "録音録画",
+        "rewritable": "改稿可能",
+        "scp-art": "scpアート",
+        "scp-regional": "scp-regional",
+        "scp-th": "scp-th",
+        "science-fiction": "サイエンスフィクション",
+        "slice-of-life": "日常",
+        "spy-fiction": "スパイフィクション",
+        "stone": "岩石",
+        "superhero": "スーパーヒーロー",
+        "surrealism": "シュルレアリスム",
+        "_tale-hub": "_taleハブ",
+        "the-serpent": "蛇",
+        "theme": "テーマ",
+        "unlisted": "unlisted",
+        "western": "西部劇",
+        "xenofiction": "異種視点"
+    }
+    en_tags_path = os.path.join(os.path.dirname(__file__), '..', 'en_tags.json')
+    with open(en_tags_path, 'r', encoding='utf-8') as f:
+        en_tags_data = json.load(f)
+    en_tag_names = set()
+    for item in en_tags_data:
+        if isinstance(item, dict) and "name" in item:
+            en_tag_names.add(item["name"])
+    missing = set(test_cases.keys()) - en_tag_names
+    assert not missing, f"テストケースにあるが en_tags.json に無いタグ: {missing}"
+
+
+def test_all_en_tags_json_tags_exist_in_dictionary():
+    """
+    en_tags.json の全タグが dictionaries/en_to_jp.json に存在するか検証。
+    """
+    en_tags_path = os.path.join(os.path.dirname(__file__), '..', 'en_tags.json')
+    dict_path = os.path.join(os.path.dirname(__file__), '..', 'dictionaries', 'en_to_jp.json')
+    with open(en_tags_path, 'r', encoding='utf-8') as f:
+        en_tags_data = json.load(f)
+    with open(dict_path, 'r', encoding='utf-8') as f:
+        dict_data = json.load(f)
+    en_tag_names = set()
+    for item in en_tags_data:
+        if isinstance(item, dict) and "name" in item:
+            en_tag_names.add(item["name"])
+    dict_keys = set(dict_data.keys())
+    missing = en_tag_names - dict_keys
+    assert not missing, f"en_tags.json にあるが dictionaries/en_to_jp.json に無いタグ: {missing}"
