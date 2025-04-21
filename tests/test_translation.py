@@ -168,3 +168,110 @@ def test_translation_of_specific_tags():
     }
     for tag_en, expected_jp in test_cases.items():
         assert translate_tag(tag_en) == expected_jp, f"Translation for '{tag_en}' failed."
+
+# --- JPタグ抽出の新規テスト ---
+
+JP_TAGS_PATH = os.path.join(os.path.dirname(__file__), '..', 'jp_tags.json')
+SCP_JP_DIR = os.path.join(os.path.dirname(__file__), '..', 'scp-jp')
+
+def load_jp_tags():
+    """jp_tags.json からタグ名とスラッグを読み込みます。"""
+    try:
+        with open(JP_TAGS_PATH, 'r', encoding='utf-8') as f:
+            jp_tags_data = json.load(f)
+        # 空のオブジェクトを除外し、有効な名前とスラッグのセットを作成します
+        valid_tags = set()
+        for tag_info in jp_tags_data:
+            # tag_info が空でない辞書であることを確認してからキーにアクセスします
+            if isinstance(tag_info, dict) and tag_info:
+                if tag_info.get("name"):
+                    valid_tags.add(tag_info["name"])
+                if tag_info.get("slug"):
+                    valid_tags.add(tag_info["slug"])
+        return valid_tags
+    except FileNotFoundError:
+        pytest.fail(f"jp_tags.json が {JP_TAGS_PATH} に見つかりません", pytrace=False)
+    except json.JSONDecodeError:
+        pytest.fail(f"{JP_TAGS_PATH} からのJSONデコードエラー", pytrace=False)
+    except Exception as e:
+        pytest.fail(f"jp_tags.json の読み込み中に予期せぬエラーが発生しました: {e}", pytrace=False)
+    return set() # 失敗した場合は空のセットを返します
+
+def extract_tags_from_wikidot(content: str) -> set[str]:
+    """Wikidotソーステキストからタグを抽出します。"""
+    tags = set()
+    # [[include ... tags="..."]] または [[module ListPages ... tags="..."]] 内のタグを見つけるための正規表現
+    # 引用符内のスペースで区切られた複数のタグを処理します。
+    # tags属性の周りのスペースの変動に対応します。
+    tag_patterns = [
+        re.compile(r'\[\[(?:include|module\s+ListPages)[^\]]*?\s+tags="([^"]+)"[^\]]*?\]\]', re.IGNORECASE),
+        # 他のタグ構文が存在する場合は、ここに追加のパターンを追加します
+    ]
+    for pattern in tag_patterns:
+        matches = pattern.findall(content)
+        for tag_string in matches:
+            # スペースで区切られたタグを分割し、セットに追加します
+            tags.update(tag.strip() for tag in tag_string.split() if tag.strip())
+    return tags
+
+# scp-jp ディレクトリ内の .txt ファイルのリストを取得します
+try:
+    # リストする前に SCP_JP_DIR が存在することを確認します
+    if os.path.isdir(SCP_JP_DIR):
+        scp_jp_files = [
+            os.path.join(SCP_JP_DIR, f)
+            for f in os.listdir(SCP_JP_DIR)
+            if os.path.isfile(os.path.join(SCP_JP_DIR, f)) and f.endswith('.txt')
+        ]
+    else:
+        # ディレクトリが存在しない場合は、ファイルが見つからなかったものとして扱います
+        scp_jp_files = []
+        # ディレクトリが必要な場合は、テスト設定を失敗させることもできます
+        # pytest.fail(f"scp-jp ディレクトリが {SCP_JP_DIR} に見つかりません", pytrace=False)
+except FileNotFoundError:
+    # このケースは os.path.isdir が処理するかもしれませんが、安全のために保持します
+    scp_jp_files = []
+except Exception as e:
+    # ファイルリスト作成中の他の潜在的なエラーをキャッチします
+    pytest.fail(f"{SCP_JP_DIR} 内のファイルのリスト作成エラー: {e}", pytrace=False)
+    scp_jp_files = []
+
+
+# 有効なJPタグを一度読み込みます
+valid_jp_tags = load_jp_tags()
+
+@pytest.mark.parametrize("filepath", scp_jp_files)
+def test_jp_tag_extraction_and_validation(filepath):
+    """
+    scp-jp/*.txt ファイルから抽出されたタグが jp_tags.json に存在するかをテストします。
+    """
+    if not valid_jp_tags:
+        pytest.skip("jp_tags.json が読み込めないか空のため、テストをスキップします。")
+        return # スキップ後に関数が終了することを確認します
+
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except FileNotFoundError:
+        # パラメータ化によりファイルリストが古くなることは考えにくいですが、発生する可能性があります
+        pytest.fail(f"テスト実行中にテストファイルが見つかりません: {filepath}", pytrace=False)
+        return # 失敗後に関数が終了することを確認します
+    except Exception as e:
+        pytest.fail(f"テストファイル {filepath} の読み取りエラー: {e}", pytrace=False)
+        return # 失敗後に関数が終了することを確認します
+
+
+    extracted_tags = extract_tags_from_wikidot(content)
+
+    if not extracted_tags:
+        # 現在のパターンを使用してタグが見つからない場合、このファイルのアサーション部分をスキップします。
+        # これにより、期待される形式のタグを実際に含まないファイルのテストが失敗するのを防ぎます。
+        # すべてのファイルにタグが含まれるべき場合は、これをログに記録するか、別の方法で処理することもできます。
+        pytest.skip(f"{os.path.basename(filepath)} で期待される形式のタグが見つかりません")
+        return # スキップ後に関数が終了することを確認します
+
+
+    missing_tags = extracted_tags - valid_jp_tags
+
+    assert not missing_tags, \
+        f"{os.path.basename(filepath)} で見つかったが jp_tags.json にないタグ: {missing_tags}"
