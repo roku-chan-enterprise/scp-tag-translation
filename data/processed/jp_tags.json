@@ -1,10 +1,87 @@
 [
   {
+    "name": "scp",
+    "slug": "scp",
+    "name_en": "scp",
+    "description": "[/scp-series メインブロック]、[/scp-001 001提言]、[/joke-scps Joke(-J)]、[/scp-ex Explained(-EX)]、[/scp-d Decommissioned(-D)]のいずれかに属する[[footnote]]何らかの理由でアーカイブされ、これらの分類から外れた場合も含みます。[[/footnote]]SCP報告書の記事に付与されるタグです。//scp//タグが使用される場合、オブジェクトクラスカテゴリのタグのいずれかと併用されねばなりません。作成に関しては[[[how-to-write:post-scp|]]]を参照してください。",
+    "category": "創作物",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "goi-format",
+    "slug": "goi-format",
+    "name_en": "goi-format",
+    "description": "ある特定の要注意団体(GoI)の視点で記述された独自のフォーマットの記事[[footnote]]SCP-ENの定義では、「GoIハブで用意されているフォーマットに従う」と制限がありますが、JPでは導入されていません。[[/footnote]]に付与されるタグです。必ずGoIフォーマット隠しタグ1つと併用されねばなりません。作成に関しては[[[how-to-write:post-goi-format|]]]を参照してください。",
+    "category": "創作物",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "tale",
+    "slug": "tale",
+    "name_en": "tale",
+    "description": "SCPユニバースを舞台にした創作物で、//scp//、//goi-format//、//サイト//、//補足//のいずれでもない記事に付与されるタグです。作成に関しては[[[how-to-write:post-tale|]]]を参照してください。",
+    "category": "創作物",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "補足",
+    "slug": "補足",
+    "name_en": "supplement",
+    "description": "読解するために親ページのコンテクストを必要とする記事に付与されるタグです。//補足//タグが付与されるページは、親となるページの著者自身によるものであるか、あるいは著者に許可を得ていなければなりません。オマージュやパロディの記事には(例えそれが記録の形式であったとしても)代わりに//tale//タグが使用されるべきです。作成に関しては[[[how-to-write:post-others|]]]を参照してください。",
+    "category": "創作物",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
     "name": "サイト",
     "slug": "サイト",
     "name_en": "site",
     "description": "財団の保有する施設についてのドキュメントという形式のページに付与されるタグです。適切ならば//ハブ//タグと併用されねばなりません。これらのページは収容されているオブジェクトや施設の歴史、配属されている職員などの情報を含みます。",
     "category": "創作物",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "剪定対象-子",
+    "slug": "剪定対象-子",
+    "name_en": null,
+    "description": "//剪定対象-親//の//合作//記事に投稿された個別の作品のページに付与されるタグです。これらのページの投稿は、それぞれの//剪定対象-親//の専用モジュールからのみ認められ、支部タグを除いた他のタグを同時に付与することはできません。",
+    "category": "創作物",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "ガイド",
+    "slug": "ガイド",
+    "name_en": null,
+    "description": "本サイトと本サイトが管理する関連サイト・サービスで守るべきルールを示したページに付与されるタグです。//アーカイブ済み//タグと併用される場合、そのページの内容は古くなっており、メンバーが従うべきガイドラインとしての効力を持ちません。また、SCP-JPにおける//ガイド//タグとENにおける//guide//タグは運用方法が異なります。詳細は[#faq 翻訳に関するFAQ]を参照してください。",
+    "category": "インフォメーション",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "執筆",
+    "slug": "執筆",
+    "name_en": null,
+    "description": "執筆についての助言が書かれたページに付与されるタグです。ただし、//エッセイ//が付与されている場合はこのタグを併用できません。",
+    "category": "インフォメーション",
     "meta": {
       "related_tags": [],
       "see_also": []
@@ -22,6 +99,61 @@
     }
   },
   {
+    "name": "エッセイ",
+    "slug": "エッセイ",
+    "name_en": "essay",
+    "description": "メンバーの個人的経験に基づく提案という形を取って、特定の事柄に関しての有益な助言を含んだページに付与されるタグです。//アーカイブ済み//タグと併用される場合、そのページの内容は古くなっており、現在もそのまま適用できるものではありません。あくまで参考程度に考えてください。作成に関しては[[[how-to-write:post-tale|]]]を参照してください。",
+    "category": "インフォメーション",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "世界観",
+    "slug": "世界観",
+    "name_en": null,
+    "description": "主に財団世界観の設定がまとめられたページに付与されるタグです。JPではENにおいてサイトメンバー公共で使用されている資料としてのページ等に使用される//resource//タグを含める形で対応しますが、完全互換ではありません。設定集タグとは併用できません。",
+    "category": "インフォメーション",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "リファレンス",
+    "slug": "リファレンス",
+    "name_en": null,
+    "description": "Wikidot構文や//コンポーネント//などのインポートページの使用方法を掲載するためのページに付与されるタグです。{{reference:}}カテゴリに作成されている場合、著者による編集ならばスタッフの許可を必要としません。",
+    "category": "インフォメーション",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "ニュース",
+    "slug": "ニュース",
+    "name_en": "news",
+    "description": "ファンによるアートワークや最近投稿され成功した記事など、広義でのSCP財団に関するニュースが含まれるページに付与されるタグです。また、スタッフによる公式なアナウンスに用いられることもあります(メインページやフォーラムでアナウンスされなかった場合のみです)。JPでは、[[[news-jp|茜刺財団新聞]]]に使用されています。",
+    "category": "インフォメーション",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "著者ページ",
+    "slug": "著者ページ",
+    "name_en": "author",
+    "description": "著者の紹介ページに付与されるタグです。//著者ページ//は特定の著者の著作に対するハブとして機能しますが、支部タグとウィキ運営用タグを除き他のタグと併用することはできません。作成に関しては[[[author-page-guide|]]]を参照してください。",
+    "category": "ユーザー",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
     "name": "アートワーク",
     "slug": "アートワーク",
     "name_en": "artwork",
@@ -33,11 +165,187 @@
     }
   },
   {
+    "name": "フォト作品",
+    "slug": "フォト作品",
+    "name_en": null,
+    "description": "コミュニティのメンバーによって撮影された写真をメインとしたページに付与されるタグです。[[[photo-contest|]]]で利用されましたが、現在は使用されていません。",
+    "category": "ユーザー",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "コンポーネント",
+    "slug": "コンポーネント",
+    "name_en": "component",
+    "description": "[[include]]構文を使用して他のページにインポートされるページに付与されるタグです。新しいデザイン、機能を追加します。//コンポーネント・バックエンド//タグとは併用できません。適切ならば//テーマ//タグを代わりに使用してください。",
+    "category": "インポート",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "コンポーネント・バックエンド",
+    "slug": "コンポーネント・バックエンド",
+    "name_en": "component-backend",
+    "description": "他の//コンポーネント//と//コンポーネント・バックエンド//にインポートされる「内部テンプレート」ページに付与されるタグです。//コンポーネント//タグとは併用できません。",
+    "category": "インポート",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "テーマ",
+    "slug": "テーマ",
+    "name_en": "theme",
+    "description": "ページの全体的な外観を変更するページに付与されるタグです。作成に関しては[[[custom-theme-policy|]]]を参照してください。",
+    "category": "インポート",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "フラグメント",
+    "slug": "フラグメント",
+    "name_en": "fragment",
+    "description": "他ページを親に持ち、そのページのための内容のみを含み、そのページにインポートされるページに付与されるタグです。この種のページは{{fragment:}}カテゴリに作成されている必要があります。また、Wikiに親ページが存在する限り削除対象から除外されますが、//孤立//ページとなった、あるいは親ページが削除された場合、即時削除の対象となります。他のメジャータグとの併用は、スタッフが許可を出した場合にのみ認められます。",
+    "category": "インポート",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "トップ掲載",
+    "slug": "トップ掲載",
+    "name_en": null,
+    "description": "トップページにサイトニュースや注目記事を掲載するためのページに付与されるタグです。",
+    "category": "インポート",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "管理",
+    "slug": "管理",
+    "name_en": "admin",
+    "description": "//管理//の名が示す通り、何らかの公式的な目的に基いて作成されたページに付与されるタグです。",
+    "category": "インターナル",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "フォーラム",
+    "slug": "フォーラム",
+    "name_en": "forum",
+    "description": "Wikidotのフォーラム機能のために必要なページに付与されるタグです。",
+    "category": "インターナル",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "見出し",
+    "slug": "見出し",
+    "name_en": "splash",
+    "description": "//見出し//タグは記事の「表紙」に付与されるタグです。(例: [[[scp-076-2-splash|]]] » [[[scp-076-2|]]])",
+    "category": "インターナル",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
     "name": "メタデータ",
     "slug": "メタデータ",
     "name_en": "metadata",
     "description": "SCP一覧など、記事のメタデータを含むページに付与されるタグです。",
     "category": "インターナル",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "投票",
+    "slug": "投票",
+    "name_en": null,
+    "description": "{{poll:}}カテゴリに作成される、通常のRate以外でVoteシステムを投票に用いるためのページに付与されるタグです。",
+    "category": "インターナル",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "ハブ",
+    "slug": "ハブ",
+    "name_en": "hub",
+    "description": "//ハブ//のタグは他のページへのリンクを集めたページに付与されるタグです。すべてのSCPシリーズのページ、Tale一覧、ほかの種々のページに//ハブ//タグは使用されます。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "コンテスト",
+    "slug": "コンテスト",
+    "name_en": "contest",
+    "description": "コミュニティ内で開催されるコンテストイベントのために作られたページに付与されるタグです。エントリーリストを含む場合は//ハブ//タグが併用されます。コンテスト参加作品には付与しないでください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "キャンペーン",
+    "slug": "キャンペーン",
+    "name_en": null,
+    "description": "コミュニティ内で開催されるキャンペーンイベントのために作られたページに付与されるタグです。エントリーリストを含む場合は//ハブ//タグが併用されます。キャンペーン参加作品には付与しないでください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "プロジェクト",
+    "slug": "プロジェクト",
+    "name_en": "project",
+    "description": "コミュニティ内で企画されたプロジェクトのページに付与されるタグです。SCP-ENでは廃止されました。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "ワークベンチ",
+    "slug": "ワークベンチ",
+    "name_en": "workbench",
+    "description": "スタッフがWikidotのモジュールを使って特定のページのチェックを可能にするために作られたページに付与されるタグです。あなたは同じチェックシステムを自由に使えますが、スタッフから明示的な許可を得ていない限り新しいワークベンチを作らないでください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "サンドボックス",
+    "slug": "サンドボックス",
+    "name_en": "sandbox",
+    "description": "作成中のページや草案に付与されるタグです。当サイトではサンドボックスページの作成は認められていません。[[[sandbox3guide|SCP-JPサンドボックスⅢ]]]をご利用ください。",
+    "category": "その他",
     "meta": {
       "related_tags": [],
       "see_also": []
@@ -3256,6 +3564,28 @@
     }
   },
   {
+    "name": "必読",
+    "slug": "必読",
+    "name_en": "required",
+    "description": "サイトに参加したら必ず確認すべきページに付与されるタグです。",
+    "category": "ページ特性",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "殿堂入り",
+    "slug": "殿堂入り",
+    "name_en": "heritage",
+    "description": "スタッフによって指定されたSCP財団殿堂入りコレクションの記事に付与されるタグです。SCP-ENでは廃止されましたが、JPを含む一部の支部サイトでは運用されています。",
+    "category": "ページ特性",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
     "name": "合作",
     "slug": "合作",
     "name_en": "collaboration",
@@ -3315,6 +3645,17 @@
     "slug": "映像添付",
     "name_en": "video",
     "description": "1つ以上の映像ファイルが添付されたページに付与されるタグです。適切ならば、ページ作成者ではないサイトメンバーもこのタグをページに付与することができます。",
+    "category": "ページ特性",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "リダイレクト",
+    "slug": "リダイレクト",
+    "name_en": "redirect",
+    "description": "異なるページに閲覧者をリダイレクトするページに付与されるタグです。//リダイレクト//ページの内容を閲覧したい場合、URLの末尾に{{/noredirect/true}}を追加してください。",
     "category": "ページ特性",
     "meta": {
       "related_tags": [],
@@ -3382,6 +3723,61 @@
     "name_en": "joke",
     "description": "\"ジョーク\"あるいは\"SCPユニバースの外\"と見なされる内容のページに付与されるタグです。ジョークページはどのような分類のページのパロディでも構いません。ジョークページの詳細については[[[joke-scps-jp|]]]を参照してください。",
     "category": "記事特性",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "注目記事",
+    "slug": "注目記事",
+    "name_en": "featured",
+    "description": "スタッフによって指定された注目記事に付与されるタグです。",
+    "category": "注目記事",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "賞典-注目記事",
+    "slug": "賞典-注目記事",
+    "name_en": "prize-feature",
+    "description": "コンテストで優秀な評価を得た著者が選出した注目記事に付与されるタグです。",
+    "category": "注目記事",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "イベント-注目記事",
+    "slug": "イベント-注目記事",
+    "name_en": "event-featured",
+    "description": "イベントでスタッフによって指定された注目記事に付与されるタグです。",
+    "category": "注目記事",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "批評者スポットライト",
+    "slug": "批評者スポットライト",
+    "name_en": "reviewers-spotlight",
+    "description": "批評チーム[[footnote]]SCP-ENの制度です。SCP-JPには批評チームが存在しないことに留意してください。[[/footnote]]によって選定された注目記事に付与されるタグです。",
+    "category": "注目記事",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "注目の翻訳記事",
+    "slug": "注目の翻訳記事",
+    "name_en": null,
+    "description": "注目の翻訳記事選定チームによって指定された、注目の翻訳SCPと注目の翻訳Taleに付与されるタグです。//jp//タグが付与されていないページからそれぞれ選ばれます。",
+    "category": "注目記事",
     "meta": {
       "related_tags": [],
       "see_also": []
@@ -3630,6 +4026,39 @@
     }
   },
   {
+    "name": "未認可支部",
+    "slug": "未認可支部",
+    "name_en": null,
+    "description": "上のいずれでもない言語版のサイトから翻訳されたオリジナルのページに付与されるタグです。[[[http://scp-int.wikidot.com/unofficial:language-incubator-hub|SCP-UN]]](少数言語インキュベータ)[[footnote]] SCP-INT(国際翻訳アーカイブ)内のサブプロジェクト。活動的な支部が現存しない言語での翻訳・創作を投稿するプラットフォームを提供し、新たな支部作成に向けて援助することを目的としています。 [[/footnote]]に投稿された作品も含まれます。新規作成は翻訳を含めて基本的に認められていません。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "外部ウィキアーカイブ",
+    "slug": "外部ウィキアーカイブ",
+    "name_en": null,
+    "description": "SCP財団Wiki外部のサイトから和訳・転載された記事に付与されるタグです。//外部ウィキアーカイブ//タグが付与されるページには、翻訳元の言語に相当する支部タグを併用される必要があります。新規作成は翻訳を含めて基本的に認められていません。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "孤立",
+    "slug": "孤立",
+    "name_en": "orphaned",
+    "description": "親となるべきページを失った//補足//や//フラグメント//のページに付与されるタグです。//孤立//タグの付与されたページは稀に役に立つこともありますが、基本的には消去の対象になります。もし//孤立//タグが付与されるべきページを発見したらスタッフにお知らせください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
     "name": "要翻訳",
     "slug": "要翻訳",
     "name_en": null,
@@ -3652,10 +4081,76 @@
     }
   },
   {
+    "name": "アーカイブ済み",
+    "slug": "アーカイブ済み",
+    "name_en": "archived",
+    "description": "置き換えられたり、廃止されたり、非アクティブになったものの参照のためにアーカイブされているページに付与されるタグです。//scp//ではないアーカイブされたページは{{archived:}}カテゴリに移動されます。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "元記事削除",
+    "slug": "元記事削除",
+    "name_en": null,
+    "description": "翻訳元のページが削除されてしまったページに付与されるタグです。そのようなページは{{old:}}カテゴリに移動されます。条件を満たすもののこれらの適用が為されていないページを発見したら、[http://ja.scp-wiki.net/forum/t-2282637/ こちら]で報告してください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "削除通知",
+    "slug": "削除通知",
+    "name_en": null,
+    "description": "何らかの理由により削除の通知が行われた記事に対して付与されるタグです。詳細は[[[deletions-guide|]]]を参照してください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "合作記事剪定通知",
+    "slug": "合作記事剪定通知",
+    "name_en": null,
+    "description": "何らかの理由により削除(剪定)の通知が行われた//剪定対象-子//ページに付与されるタグです。詳細は[[[delete-collaboration-guide-jp|]]]を参照してください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
     "name": "画像差し止め",
     "slug": "画像差し止め",
     "name_en": null,
     "description": "記事に使用されているメディアがSCP-JPではライセンス上掲載できず、メディアの表示を行なっていない・差し止めたページに付与されるタグです。代替メディアの掲載等で記事に使用されているメディアのライセンスがクリアになった場合は外されますが、差し止め後にSCP-JP側でのみ独自に代替メディアを使用している翻訳記事には、元記事のメディアが差し替えられるまで付与され続けます。自分が投稿・翻訳したものでないページで該当するページを発見した際は、ディスカッション等でスタッフに報告してください。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "差し止め通知",
+    "slug": "差し止め通知",
+    "name_en": null,
+    "description": "ライセンス表記不備などの理由で将来的に画像が差し止めされる可能性があるページに付与されるタグです。",
+    "category": "その他",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "外部連携",
+    "slug": "外部連携",
+    "name_en": null,
+    "description": "Wikidot外部のツールと連携して機能を提供しているページに付与されるタグです。",
     "category": "その他",
     "meta": {
       "related_tags": [],
