@@ -49,8 +49,10 @@ def retrieve_and_save_page(
         # フルネーム中の':'を'_'に置換するなど、ファイル名として安全な形式にする
         safe_page_name = page_fullname.replace(":", "_").replace("/", "_")
         output_filename = f"{safe_page_name}.txt"
-        # 保存先ディレクトリをwikidot_sources配下に変更
-        output_dir = os.path.join(SCRIPT_DIR, "wikidot_sources", site_unix_name)
+        # 保存先ディレクトリをdata/raw/wikidot_sources配下に変更
+        output_dir = os.path.join(
+            SCRIPT_DIR, "..", "data", "raw", "wikidot_sources", site_unix_name
+        )
         os.makedirs(output_dir, exist_ok=True)
         output_filepath = os.path.join(output_dir, output_filename)
 

@@ -11,7 +11,7 @@ import pytest
 
 # Define the path to the translation dictionary relative to the project root
 DICTIONARY_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "dictionaries", "en_to_jp.json"
+    os.path.dirname(__file__), "..", "data", "dictionaries", "en_to_jp.json"
 )
 
 # Load the translation dictionary
@@ -287,7 +287,9 @@ def test_jp_tag_extraction_and_validation(filepath: str) -> None:
 
 # --- ENタグ抽出の新規テスト ---
 
-EN_TAGS_JSON_PATH = os.path.join(os.path.dirname(__file__), "..", "en_tags.json")
+EN_TAGS_JSON_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "processed", "en_tags.json"
+)
 WIKIDOT_SOURCE_PATH = os.path.join(
     os.path.dirname(__file__), "..", "05command", "tech-hub-tag-list.txt"
 )
@@ -430,7 +432,9 @@ def test_all_testcase_tags_exist_in_en_tags_json():
         "western": "西部劇",
         "xenofiction": "異種視点",
     }
-    en_tags_path = os.path.join(os.path.dirname(__file__), "..", "en_tags.json")
+    en_tags_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "processed", "en_tags.json"
+    )
     with open(en_tags_path, "r", encoding="utf-8") as f:
         en_tags_data = json.load(f)
     en_tag_names: set[str] = set()
@@ -446,7 +450,9 @@ def test_all_en_tags_json_tags_exist_in_dictionary():
     """
     en_tags.json の全タグが dictionaries/en_to_jp.json に存在するか検証。
     """
-    en_tags_path = os.path.join(os.path.dirname(__file__), "..", "en_tags.json")
+    en_tags_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "processed", "en_tags.json"
+    )
     dict_path = os.path.join(
         os.path.dirname(__file__), "..", "dictionaries", "en_to_jp.json"
     )
