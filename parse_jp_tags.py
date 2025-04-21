@@ -1,8 +1,13 @@
-import re
 import json
 import os
+import re
+
 # Removed unused sys import
-from typing import TypedDict, cast # Removed Set, List as they are no longer needed after type hint updates
+from typing import (  # Removed Set, List as they are no longer needed after type hint updates
+    TypedDict,
+    cast,
+)
+
 
 # Use a simpler approach for handling encoding errors
 def safe_print(message: str) -> None:
@@ -11,32 +16,40 @@ def safe_print(message: str) -> None:
         print(message)
     except UnicodeEncodeError:
         # Fall back to ASCII with escaped characters if Unicode fails
-        print(str(message).encode('ascii', 'backslashreplace').decode('ascii'))
+        print(str(message).encode("ascii", "backslashreplace").decode("ascii"))
+
 
 class Category(TypedDict):
     name: str
-    parent: str | None # Updated Optional[str]
+    parent: str | None  # Updated Optional[str]
     level: int
 
+
 class TagMeta(TypedDict):
-    related_tags: list[str] # Updated List[str]
-    see_also: list[str] # Updated List[str]
+    related_tags: list[str]  # Updated List[str]
+    see_also: list[str]  # Updated List[str]
+
 
 class TagData(TypedDict):
     name: str
     slug: str
-    name_en: str | None # Updated Optional[str]
+    name_en: str | None  # Updated Optional[str]
     description: str
     category: str
     meta: TagMeta
 
+
 def create_root_category() -> Category:
-    return Category(name='', parent=None, level=0)
+    return Category(name="", parent=None, level=0)
+
 
 # Include構文の正規表現
 include_pattern = re.compile(r"\[\[include\s+:scp-jp:fragment:([^\]]+)\]\]")
 
-def read_and_expand_includes(filepath: str, base_dir: str = ".", visited: set[str] | None = None) -> str: # Updated Optional[Set[str]]
+
+def read_and_expand_includes(
+    filepath: str, base_dir: str = ".", visited: set[str] | None = None
+) -> str:  # Updated Optional[Set[str]]
     """
     指定されたファイルを読み込み、[[include]]構文を展開して内容を返す。
     循環参照を防止する。
@@ -56,62 +69,80 @@ def read_and_expand_includes(filepath: str, base_dir: str = ".", visited: set[st
     try:
         safe_print(f"DEBUG: Attempting to read file: {full_path}")
     except Exception:
-        safe_print(f"DEBUG: Attempting to read file: (path contains non-printable characters)")
+        safe_print(
+            f"DEBUG: Attempting to read file: (path contains non-printable characters)"
+        )
 
     if full_path in visited:
         safe_print(f"Warning: Circular include detected and skipped for {filepath}")
-        return "" # 循環参照の場合は空文字列を返す
+        return ""  # 循環参照の場合は空文字列を返す
 
     visited.add(full_path)
 
     try:
-        with open(full_path, 'r', encoding='utf-8') as f:
+        with open(full_path, "r", encoding="utf-8") as f:
             content = f.read()
-            safe_print(f"DEBUG: Successfully read file: {full_path} ({len(content)} bytes)")
+            safe_print(
+                f"DEBUG: Successfully read file: {full_path} ({len(content)} bytes)"
+            )
     except FileNotFoundError:
         safe_print(f"Warning: Included file not found: {filepath}")
-        return "" # ファイルが見つからない場合は空文字列
+        return ""  # ファイルが見つからない場合は空文字列
 
     # Include構文を探して再帰的に展開
     expanded_content = ""
     last_end = 0
     include_count = 0
-    
+
     for match in include_pattern.finditer(content):
         include_count += 1
         start, end = match.span()
         included_filename_base = match.group(1)
         try:
-            safe_print(f"DEBUG: Found include directive: {match.group(0)}, extracted filename base: {included_filename_base}")
+            safe_print(
+                f"DEBUG: Found include directive: {match.group(0)}, extracted filename base: {included_filename_base}"
+            )
         except Exception:
-            safe_print(f"DEBUG: Found include directive (contains non-printable characters)")
-        
+            safe_print(
+                f"DEBUG: Found include directive (contains non-printable characters)"
+            )
+
         # .txt拡張子がない場合に追加（Wikidotの挙動に合わせる）
         # Included files are expected to be in the 'scp-jp' directory
         included_dir = "scp-jp"
-        if not included_filename_base.endswith('.txt'):
-            included_filename = os.path.join(included_dir, f"fragment_{included_filename_base}.txt")
+        if not included_filename_base.endswith(".txt"):
+            included_filename = os.path.join(
+                included_dir, f"fragment_{included_filename_base}.txt"
+            )
         else:
             # If it already has .txt, assume it's the full fragment name like fragment_tag-list-basic.txt
             # We still need to prepend the directory
             # Check if 'fragment_' prefix is already there, if not, add it (based on original logic intent)
-            if not included_filename_base.startswith('fragment_'):
+            if not included_filename_base.startswith("fragment_"):
                 # This case might be less common now, but preserving similar logic
-                if included_filename_base.startswith('tag-list-'): # Original check
-                    included_filename = os.path.join(included_dir, f"fragment_{included_filename_base}")
-                else: # Fallback
-                    included_filename = os.path.join(included_dir, included_filename_base)
+                if included_filename_base.startswith("tag-list-"):  # Original check
+                    included_filename = os.path.join(
+                        included_dir, f"fragment_{included_filename_base}"
+                    )
+                else:  # Fallback
+                    included_filename = os.path.join(
+                        included_dir, included_filename_base
+                    )
             else:
                 included_filename = os.path.join(included_dir, included_filename_base)
 
         try:
             safe_print(f"DEBUG: Resolved include path: {included_filename}")
         except Exception:
-            safe_print(f"DEBUG: Resolved include path (contains non-printable characters)")
+            safe_print(
+                f"DEBUG: Resolved include path (contains non-printable characters)"
+            )
 
         expanded_content += content[last_end:start]
         # 新しいvisitedセットを渡して再帰呼び出し
-        included_content = read_and_expand_includes(included_filename, base_dir, visited.copy())
+        included_content = read_and_expand_includes(
+            included_filename, base_dir, visited.copy()
+        )
         expanded_content += included_content
         safe_print(f"DEBUG: Added {len(included_content)} bytes from included file")
         last_end = end
@@ -121,7 +152,11 @@ def read_and_expand_includes(filepath: str, base_dir: str = ".", visited: set[st
     safe_print(f"DEBUG: Final expanded content size: {len(expanded_content)} bytes")
     return expanded_content
 
-def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt"), output_filepath: str = "jp_tags.json") -> None:
+
+def parse_jp_tag_list(
+    start_filepath: str = os.path.join("scp-jp", "tag-list.txt"),
+    output_filepath: str = "jp_tags.json",
+) -> None:
     """
     日本語版タグリストファイルを解析し、タグ情報をJSON形式で出力する。
 
@@ -133,42 +168,46 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
     full_content = read_and_expand_includes(start_filepath)
     safe_print(f"Expanded content size: {len(full_content)} bytes")
 
-    tags_data: list[TagData] = [] # Updated List[TagData]
+    tags_data: list[TagData] = []  # Updated List[TagData]
     current_tag: TagData | None = None  # Updated Optional[TagData]
 
     # 正規表現パターン - 修正版
     # セクションヘッダは "+ タイトル" または "++ タイトル" の形式
-    section_pattern = re.compile(r'^\+\+?\s+(.*?)(?:\[\[#.*)?$')
+    section_pattern = re.compile(r"^\+\+?\s+(.*?)(?:\[\[#.*)?$")
     # タグ定義行は "* **[[[/system:page-tags/tag/タグ名|タグ名]]]** //(英語名)// - 説明" の形式
-    tag_pattern = re.compile(r'^\*\s+\*\*\[{3}/system:page-tags/tag/([^|]+)\|([^\]]+)\]{3}\*\*\s+(?://\(([^)]+)\)//\s+)?-\s*(.*)')
+    tag_pattern = re.compile(
+        r"^\*\s+\*\*\[{3}/system:page-tags/tag/([^|]+)\|([^\]]+)\]{3}\*\*\s+(?://\(([^)]+)\)//\s+)?-\s*(.*)"
+    )
     # メタ情報行は "* // キー: 値 //" の形式
-    meta_pattern = re.compile(r'^\*\s+//\s*([^:]+):\s*(.*)//')
+    meta_pattern = re.compile(r"^\*\s+//\s*([^:]+):\s*(.*)//")
 
     current_category: Category = create_root_category()
-    stack: list[Category] = [current_category] # Updated List[Category]
+    stack: list[Category] = [current_category]  # Updated List[Category]
 
     tag_count = 0
     section_count = 0
     meta_count = 0
 
-    for line_num, line in enumerate(full_content.split('\n'), 1):
+    for line_num, line in enumerate(full_content.split("\n"), 1):
         line = line.rstrip()
 
         # セクションヘッダの処理
         section_match = section_pattern.match(line)
         if section_match:
             name = section_match.group(1).strip()
-            level = 1 if line.startswith('+ ') else 2 if line.startswith('++ ') else 0
-            
+            level = 1 if line.startswith("+ ") else 2 if line.startswith("++ ") else 0
+
             if level > 0:
-                safe_print(f"DEBUG: Found section header at line {line_num}: '{name}' (level {level})")
+                safe_print(
+                    f"DEBUG: Found section header at line {line_num}: '{name}' (level {level})"
+                )
                 section_count += 1
 
                 # 階層レベルに基づいて親子関係を更新
-                while stack and stack[-1]['level'] >= level:
+                while stack and stack[-1]["level"] >= level:
                     stack.pop()
 
-                parent = stack[-1]['name'] if stack else None
+                parent = stack[-1]["name"] if stack else None
                 current_category = Category(name=name, parent=parent, level=level)
                 safe_print(f"DEBUG: Updated current category to: {current_category}")
             continue
@@ -183,9 +222,11 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
             tag_slug = tag_match.group(1).strip()
             tag_name = tag_match.group(2).strip()
             tag_en = tag_match.group(3) if tag_match.group(3) else None
-            description = tag_match.group(4).strip() if tag_match.group(4) else ''
-            
-            safe_print(f"DEBUG: Found tag at line {line_num}: '{tag_name}' (slug: {tag_slug}) in category '{current_category['name']}'")
+            description = tag_match.group(4).strip() if tag_match.group(4) else ""
+
+            safe_print(
+                f"DEBUG: Found tag at line {line_num}: '{tag_name}' (slug: {tag_slug}) in category '{current_category['name']}'"
+            )
             if tag_en:
                 safe_print(f"DEBUG: English name: {tag_en}")
             tag_count += 1
@@ -195,8 +236,8 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
                 slug=tag_slug,
                 name_en=tag_en,
                 description=description,
-                category=current_category['name'],
-                meta=TagMeta(related_tags=[], see_also=[])
+                category=current_category["name"],
+                meta=TagMeta(related_tags=[], see_also=[]),
             )
             continue
 
@@ -204,15 +245,21 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
         if current_tag:
             meta_match = meta_pattern.match(line)
             if meta_match:
-                key = meta_match.group(1).strip().lower().replace(' ', '-')
-                values = [v.strip().replace("'", "") for v in meta_match.group(2).split(',')]
-                safe_print(f"DEBUG: Found meta info at line {line_num} for tag '{current_tag['name']}': {key} = {values}")
+                key = meta_match.group(1).strip().lower().replace(" ", "-")
+                values = [
+                    v.strip().replace("'", "") for v in meta_match.group(2).split(",")
+                ]
+                safe_print(
+                    f"DEBUG: Found meta info at line {line_num} for tag '{current_tag['name']}': {key} = {values}"
+                )
                 meta_count += 1
 
-                if key not in current_tag['meta']:
-                    current_tag['meta'][key] = []
+                if key not in current_tag["meta"]:
+                    current_tag["meta"][key] = []
                 # Ensure we have a list to extend
-                meta_list = cast(list[str], current_tag['meta'].setdefault(key, [])) # Updated cast(List[str], ...)
+                meta_list = cast(
+                    list[str], current_tag["meta"].setdefault(key, [])
+                )  # Updated cast(List[str], ...)
                 meta_list.extend(values)
 
     # 最後のタグを追加
@@ -220,15 +267,20 @@ def parse_jp_tag_list(start_filepath: str = os.path.join("scp-jp", "tag-list.txt
         tags_data.append(current_tag)
         safe_print(f"DEBUG: Added final tag to tags_data: {current_tag['name']}")
 
-    safe_print(f"DEBUG: Parsing complete. Found {section_count} sections, {tag_count} tags, and {meta_count} meta entries.")
+    safe_print(
+        f"DEBUG: Parsing complete. Found {section_count} sections, {tag_count} tags, and {meta_count} meta entries."
+    )
 
     # JSONファイルへの書き込み
     try:
-        with open(output_filepath, 'w', encoding='utf-8') as f:
+        with open(output_filepath, "w", encoding="utf-8") as f:
             json.dump(tags_data, f, ensure_ascii=False, indent=2)
-        safe_print(f"Successfully processed {len(tags_data)} tags. Saved to {output_filepath}")
+        safe_print(
+            f"Successfully processed {len(tags_data)} tags. Saved to {output_filepath}"
+        )
     except Exception as e:
         safe_print(f"An error occurred during JSON writing: {e}")
+
 
 if __name__ == "__main__":
     parse_jp_tag_list()

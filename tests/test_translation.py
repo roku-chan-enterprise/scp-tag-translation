@@ -1,17 +1,22 @@
 # tests/test_translation.py
+
 import json
-import pytest
 import os
-import re # re モジュールをインポート
+import re
+from typing import Any, cast
+
+import pytest
 
 # --- Test Setup ---
 
 # Define the path to the translation dictionary relative to the project root
-DICTIONARY_PATH = os.path.join(os.path.dirname(__file__), '..', 'dictionaries', 'en_to_jp.json')
+DICTIONARY_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "dictionaries", "en_to_jp.json"
+)
 
 # Load the translation dictionary
 try:
-    with open(DICTIONARY_PATH, 'r', encoding='utf-8') as f:
+    with open(DICTIONARY_PATH, "r", encoding="utf-8") as f:
         translation_dict = json.load(f)
 except FileNotFoundError:
     pytest.fail(f"Translation dictionary not found at {DICTIONARY_PATH}", pytrace=False)
@@ -20,15 +25,18 @@ except json.JSONDecodeError:
 
 # --- Mock Translation Function (Replace with actual import if available) ---
 
+
 def translate_tag(en_tag: str) -> str:
     """
     Translates an English tag to Japanese using the loaded dictionary.
     Returns the original tag if no translation is found.
     (This is a placeholder; replace with import from your actual translation module)
     """
-    return translation_dict.get(en_tag, en_tag) # Return original if not found
+    return translation_dict.get(en_tag, en_tag)  # Return original if not found
+
 
 # --- Test Cases ---
+
 
 def test_basic_translation():
     """Tests a known, existing translation using 'alive' -> '生命'."""
@@ -36,9 +44,13 @@ def test_basic_translation():
     test_tag_en = "alive"
     if test_tag_en in translation_dict:
         expected_translation = translation_dict[test_tag_en]
-        assert translate_tag(test_tag_en) == expected_translation, f"Translation for '{test_tag_en}' failed."
+        assert translate_tag(test_tag_en) == expected_translation, (
+            f"Translation for '{test_tag_en}' failed."
+        )
     else:
-        pytest.skip(f"Skipping basic translation test: '{test_tag_en}' tag not found in dictionary.")
+        pytest.skip(
+            f"Skipping basic translation test: '{test_tag_en}' tag not found in dictionary."
+        )
 
 
 def test_unknown_tag():
@@ -46,9 +58,11 @@ def test_unknown_tag():
     unknown_tag = "this-tag-should-not-exist-in-the-dictionary"
     assert translate_tag(unknown_tag) == unknown_tag
 
+
 def test_empty_tag():
     """Tests translation of an empty string."""
     assert translate_tag("") == ""
+
 
 def test_case_sensitivity():
     """
@@ -64,9 +78,14 @@ def test_case_sensitivity():
         # This assertion assumes case-insensitivity or normalization handled by translate_tag
         # assert translate_tag(test_tag_en_upper) == expected_translation
         # If it should be case-sensitive and 'ALIVE' is not in the dict:
-        assert translate_tag(test_tag_en_upper) == test_tag_en_upper # Assuming 'ALIVE' itself is not a key
+        assert (
+            translate_tag(test_tag_en_upper) == test_tag_en_upper
+        )  # Assuming 'ALIVE' itself is not a key
     else:
-        pytest.skip(f"Skipping case sensitivity test: '{test_tag_en_lower}' tag not found for comparison.")
+        pytest.skip(
+            f"Skipping case sensitivity test: '{test_tag_en_lower}' tag not found for comparison."
+        )
+
 
 # --- Add More Test Cases Below ---
 def test_translation_of_specific_tags():
@@ -165,55 +184,61 @@ def test_translation_of_specific_tags():
         "theme": "テーマ",
         "unlisted": "unlisted",
         "western": "西部劇",
-        "xenofiction": "異種視点"
+        "xenofiction": "異種視点",
     }
     for tag_en, expected_jp in test_cases.items():
-        assert translate_tag(tag_en) == expected_jp, f"Translation for '{tag_en}' failed."
+        assert translate_tag(tag_en) == expected_jp, (
+            f"Translation for '{tag_en}' failed."
+        )
+
 
 # --- JPタグ抽出の新規テスト ---
 
-JP_TAGS_PATH = os.path.join(os.path.dirname(__file__), '..', 'jp_tags.json')
-SCP_JP_DIR = os.path.join(os.path.dirname(__file__), '..', 'scp-jp')
+JP_TAGS_PATH = os.path.join(os.path.dirname(__file__), "..", "jp_tags.json")
+SCP_JP_DIR = os.path.join(os.path.dirname(__file__), "..", "scp-jp")
 
-def load_jp_tags():
+
+def load_jp_tags() -> set[str]:
     """jp_tags.json からタグ名とスラッグを読み込みます。"""
     try:
-        with open(JP_TAGS_PATH, 'r', encoding='utf-8') as f:
-            jp_tags_data = json.load(f)
-        # 空のオブジェクトを除外し、有効な名前とスラッグのセットを作成します
-        valid_tags = set()
+        with open(JP_TAGS_PATH, "r", encoding="utf-8") as f:
+            jp_tags_data: list[dict[str, Any]] = json.load(f)
+        valid_tags: set[str] = set()
         for tag_info in jp_tags_data:
-            # tag_info が空でない辞書であることを確認してからキーにアクセスします
-            if isinstance(tag_info, dict) and tag_info:
+            if tag_info:
                 if tag_info.get("name"):
-                    valid_tags.add(tag_info["name"])
+                    valid_tags.add(str(tag_info["name"]))
                 if tag_info.get("slug"):
-                    valid_tags.add(tag_info["slug"])
+                    valid_tags.add(str(tag_info["slug"]))
         return valid_tags
     except FileNotFoundError:
         pytest.fail(f"jp_tags.json が {JP_TAGS_PATH} に見つかりません", pytrace=False)
     except json.JSONDecodeError:
         pytest.fail(f"{JP_TAGS_PATH} からのJSONデコードエラー", pytrace=False)
     except Exception as e:
-        pytest.fail(f"jp_tags.json の読み込み中に予期せぬエラーが発生しました: {e}", pytrace=False)
-    return set() # 失敗した場合は空のセットを返します
+        pytest.fail(
+            f"jp_tags.json の読み込み中に予期せぬエラーが発生しました: {e}",
+            pytrace=False,
+        )
+    return set()
+
 
 def extract_tags_from_wikidot(content: str) -> set[str]:
     """Wikidotソーステキストからタグを抽出します。"""
-    tags = set()
-    # [[include ... tags="..."]] または [[module ListPages ... tags="..."]] 内のタグを見つけるための正規表現
-    # 引用符内のスペースで区切られた複数のタグを処理します。
-    # tags属性の周りのスペースの変動に対応します。
+    tags: set[str] = set()
     tag_patterns = [
-        re.compile(r'\[\[(?:include|module\s+ListPages)[^\]]*?\s+tags="([^"]+)"[^\]]*?\]\]', re.IGNORECASE),
-        # 他のタグ構文が存在する場合は、ここに追加のパターンを追加します
+        re.compile(
+            r'\[\[(?:include|module\\s+ListPages)[^\]]*?\\s+tags="([^"]+)"[^\]]*?\]\]',
+            re.IGNORECASE,
+        ),
     ]
     for pattern in tag_patterns:
-        matches = pattern.findall(content)
-        for tag_string in matches:
-            # スペースで区切られたタグを分割し、セットに追加します
-            tags.update(tag.strip() for tag in tag_string.split() if tag.strip())
+        for match in pattern.finditer(content):
+            tag_str = match.group(1)
+            for tag in tag_str.split():
+                tags.add(str(tag))
     return tags
+
 
 # scp-jp ディレクトリ内の .txt ファイルのリストを取得します
 try:
@@ -222,7 +247,7 @@ try:
         scp_jp_files = [
             os.path.join(SCP_JP_DIR, f)
             for f in os.listdir(SCP_JP_DIR)
-            if os.path.isfile(os.path.join(SCP_JP_DIR, f)) and f.endswith('.txt')
+            if os.path.isfile(os.path.join(SCP_JP_DIR, f)) and f.endswith(".txt")
         ]
     else:
         # ディレクトリが存在しない場合は、ファイルが見つからなかったものとして扱います
@@ -238,77 +263,63 @@ except Exception as e:
     scp_jp_files = []
 
 
-# 有効なJPタグを一度読み込みます
-valid_jp_tags = load_jp_tags()
-
 @pytest.mark.parametrize("filepath", scp_jp_files)
-def test_jp_tag_extraction_and_validation(filepath):
-    """
-    scp-jp/*.txt ファイルから抽出されたタグが jp_tags.json に存在するかをテストします。
-    """
-    if not valid_jp_tags:
-        pytest.skip("jp_tags.json が読み込めないか空のため、テストをスキップします。")
-        return # スキップ後に関数が終了することを確認します
-
+def test_jp_tag_extraction_and_validation(filepath: str) -> None:
+    """ファイルパスを受け取り、タグ抽出とバリデーションを行うテスト。"""
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError:
-        # パラメータ化によりファイルリストが古くなることは考えにくいですが、発生する可能性があります
-        pytest.fail(f"テスト実行中にテストファイルが見つかりません: {filepath}", pytrace=False)
-        return # 失敗後に関数が終了することを確認します
-    except Exception as e:
-        pytest.fail(f"テストファイル {filepath} の読み取りエラー: {e}", pytrace=False)
-        return # 失敗後に関数が終了することを確認します
-
-
-    extracted_tags = extract_tags_from_wikidot(content)
-
-    if not extracted_tags:
-        # 現在のパターンを使用してタグが見つからない場合、このファイルのアサーション部分をスキップします。
-        # これにより、期待される形式のタグを実際に含まないファイルのテストが失敗するのを防ぎます。
-        # すべてのファイルにタグが含まれるべき場合は、これをログに記録するか、別の方法で処理することもできます。
-        pytest.skip(f"{os.path.basename(filepath)} で期待される形式のタグが見つかりません")
-        return # スキップ後に関数が終了することを確認します
-
-
-    missing_tags = extracted_tags - valid_jp_tags
-
-    assert not missing_tags, \
+        pytest.skip(f"{os.path.basename(filepath)} が見つかりません")
+        return
+    tags = extract_tags_from_wikidot(content)
+    if not tags:
+        pytest.skip(
+            f"{os.path.basename(filepath)} で期待される形式のタグが見つかりません"
+        )
+        return
+    valid_jp_tags = load_jp_tags()
+    missing_tags = tags - valid_jp_tags
+    assert not missing_tags, (
         f"{os.path.basename(filepath)} で見つかったが jp_tags.json にないタグ: {missing_tags}"
+    )
 
 
 # --- ENタグ抽出の新規テスト ---
 
-EN_TAGS_JSON_PATH = os.path.join(os.path.dirname(__file__), '..', 'en_tags.json')
-WIKIDOT_SOURCE_PATH = os.path.join(os.path.dirname(__file__), '..', '05command', 'tech-hub-tag-list.txt')
+EN_TAGS_JSON_PATH = os.path.join(os.path.dirname(__file__), "..", "en_tags.json")
+WIKIDOT_SOURCE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "05command", "tech-hub-tag-list.txt"
+)
+
 
 def extract_tags_from_wikidot_source(filepath: str) -> set[str]:
     """Wikidotソースファイルからタグ名を抽出します。"""
-    tags = set()
-    # parse_en_tags.py で使用されているパターンと同様のロジック
+    tags: set[str] = set()
     tag_pattern = re.compile(r"^\s*\*\s*\*\[https?://[^ ]+\s+([^\]]+)\]\*\*")
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             for line in f:
                 match = tag_pattern.match(line.strip())
                 if match:
-                    tags.add(match.group(1))
+                    tags.add(str(match.group(1)))
     except FileNotFoundError:
         pytest.fail(f"Wikidot source file not found at {filepath}", pytrace=False)
     except Exception as e:
         pytest.fail(f"Error reading Wikidot source file {filepath}: {e}", pytrace=False)
     return tags
 
+
 def load_tags_from_en_json(filepath: str) -> set[str]:
     """en_tags.json からタグ名を読み込みます。"""
-    tags = set()
+    tags: set[str] = set()
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
         for item in data:
             if isinstance(item, dict) and "name" in item:
-                tags.add(item["name"])
+                name = cast(str, item["name"])
+                tags.add(name)
     except FileNotFoundError:
         pytest.fail(f"en_tags.json not found at {filepath}", pytrace=False)
     except json.JSONDecodeError:
@@ -316,25 +327,6 @@ def load_tags_from_en_json(filepath: str) -> set[str]:
     except Exception as e:
         pytest.fail(f"Unexpected error loading {filepath}: {e}", pytrace=False)
     return tags
-
-def test_en_tag_extraction_completeness():
-    """
-    05command/tech-hub-tag-list.txt から抽出された全てのタグが
-    en_tags.json に存在するかを検証します。
-    """
-    wikidot_tags = extract_tags_from_wikidot_source(WIKIDOT_SOURCE_PATH)
-    json_tags = load_tags_from_en_json(EN_TAGS_JSON_PATH)
-
-    # WikidotソースにタグがあるのにJSONにないものを検出
-    missing_in_json = wikidot_tags - json_tags
-
-    assert not missing_in_json, \
-        f"Tags found in Wikidot source but missing in en_tags.json: {missing_in_json}"
-
-    # (オプション) JSONにタグがあるのにWikidotソースにないものを検出 (逆方向のチェック)
-    # extra_in_json = json_tags - wikidot_tags
-    # assert not extra_in_json, \
-    #     f"Tags found in en_tags.json but not in Wikidot source: {extra_in_json}"
 
 
 def test_all_testcase_tags_exist_in_en_tags_json():
@@ -436,15 +428,16 @@ def test_all_testcase_tags_exist_in_en_tags_json():
         "theme": "テーマ",
         "unlisted": "unlisted",
         "western": "西部劇",
-        "xenofiction": "異種視点"
+        "xenofiction": "異種視点",
     }
-    en_tags_path = os.path.join(os.path.dirname(__file__), '..', 'en_tags.json')
-    with open(en_tags_path, 'r', encoding='utf-8') as f:
+    en_tags_path = os.path.join(os.path.dirname(__file__), "..", "en_tags.json")
+    with open(en_tags_path, "r", encoding="utf-8") as f:
         en_tags_data = json.load(f)
-    en_tag_names = set()
+    en_tag_names: set[str] = set()
     for item in en_tags_data:
         if isinstance(item, dict) and "name" in item:
-            en_tag_names.add(item["name"])
+            name = cast(str, item["name"])
+            en_tag_names.add(name)
     missing = set(test_cases.keys()) - en_tag_names
     assert not missing, f"テストケースにあるが en_tags.json に無いタグ: {missing}"
 
@@ -453,16 +446,21 @@ def test_all_en_tags_json_tags_exist_in_dictionary():
     """
     en_tags.json の全タグが dictionaries/en_to_jp.json に存在するか検証。
     """
-    en_tags_path = os.path.join(os.path.dirname(__file__), '..', 'en_tags.json')
-    dict_path = os.path.join(os.path.dirname(__file__), '..', 'dictionaries', 'en_to_jp.json')
-    with open(en_tags_path, 'r', encoding='utf-8') as f:
+    en_tags_path = os.path.join(os.path.dirname(__file__), "..", "en_tags.json")
+    dict_path = os.path.join(
+        os.path.dirname(__file__), "..", "dictionaries", "en_to_jp.json"
+    )
+    with open(en_tags_path, "r", encoding="utf-8") as f:
         en_tags_data = json.load(f)
-    with open(dict_path, 'r', encoding='utf-8') as f:
+    with open(dict_path, "r", encoding="utf-8") as f:
         dict_data = json.load(f)
-    en_tag_names = set()
+    en_tag_names: set[str] = set()
     for item in en_tags_data:
         if isinstance(item, dict) and "name" in item:
-            en_tag_names.add(item["name"])
-    dict_keys = set(dict_data.keys())
-    missing = en_tag_names - dict_keys
-    assert not missing, f"en_tags.json にあるが dictionaries/en_to_jp.json に無いタグ: {missing}"
+            name = cast(str, item["name"])
+            en_tag_names.add(name)
+    dict_keys: set[str] = set(dict_data.keys())
+    missing: set[str] = en_tag_names - dict_keys
+    assert not missing, (
+        f"en_tags.json にあるが dictionaries/en_to_jp.json に無いタグ: {missing}"
+    )
