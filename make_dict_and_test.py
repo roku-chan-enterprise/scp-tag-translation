@@ -3,10 +3,10 @@ import sys
 import os
 
 
-def run_step(description, command, cwd=None):
+def run_step(description: str, command: str, cwd: str | None = None) -> None:
     print(f"\n=== {description} ===")
     try:
-        result = subprocess.run(command, shell=True, cwd=cwd, check=True, text=True)
+        subprocess.run(command, shell=True, cwd=cwd, check=True, text=True)
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] {description} で失敗しました: {e}")
         sys.exit(1)
