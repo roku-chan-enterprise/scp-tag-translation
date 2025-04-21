@@ -108,38 +108,26 @@ def read_and_expand_includes(
             )
 
         # .txt拡張子がない場合に追加（Wikidotの挙動に合わせる）
-        # Included files are expected to be in the 'scp-jp' directory
-        included_dir = "scp-jp"
         if not included_filename_base.endswith(".txt"):
-            included_filename = os.path.join(
-                included_dir, f"fragment_{included_filename_base}.txt"
-            )
+            included_filename = f"fragment_{included_filename_base}.txt"
         else:
-            # If it already has .txt, assume it's the full fragment name like fragment_tag-list-basic.txt
-            # We still need to prepend the directory
-            # Check if 'fragment_' prefix is already there, if not, add it (based on original logic intent)
             if not included_filename_base.startswith("fragment_"):
-                # This case might be less common now, but preserving similar logic
-                if included_filename_base.startswith("tag-list-"):  # Original check
-                    included_filename = os.path.join(
-                        included_dir, f"fragment_{included_filename_base}"
-                    )
-                else:  # Fallback
-                    included_filename = os.path.join(
-                        included_dir, included_filename_base
-                    )
+                if included_filename_base.startswith("tag-list-"):
+                    included_filename = f"fragment_{included_filename_base}"
+                else:
+                    included_filename = included_filename_base
             else:
-                included_filename = os.path.join(included_dir, included_filename_base)
+                included_filename = included_filename_base
 
+        included_full_path = os.path.normpath(os.path.join(base_dir, included_filename))
         try:
-            safe_print(f"DEBUG: Resolved include path: {included_filename}")
+            safe_print(f"DEBUG: Resolved include path: {included_full_path}")
         except Exception:
             safe_print(
                 "DEBUG: Resolved include path (contains non-printable characters)"
             )
 
         expanded_content += content[last_end:start]
-        # 新しいvisitedセットを渡して再帰呼び出し
         included_content = read_and_expand_includes(
             included_filename, base_dir, visited.copy()
         )
@@ -154,20 +142,17 @@ def read_and_expand_includes(
 
 
 def parse_jp_tag_list(
-    start_filepath: str = os.path.join(
-        "data", "raw", "wikidot_sources", "scp-jp", "tag-list.txt"
-    ),
+    start_filepath: str = "tag-list.txt",
     output_filepath: str = os.path.join("data", "processed", "jp_tags.json"),
+    base_dir: str = os.path.join("data", "raw", "wikidot_sources", "scp-jp"),
 ) -> None:
     """
     日本語版タグリストファイルを解析し、タグ情報をJSON形式で出力する。
-
-    Args:
-        start_filepath (str): 解析を開始するファイルパス。
-        output_filepath (str): 出力ファイルパス (JSON形式)。
     """
-    safe_print(f"Starting to parse Japanese tag list from: {start_filepath}")
-    full_content = read_and_expand_includes(start_filepath)
+    safe_print(
+        f"Starting to parse Japanese tag list from: {os.path.join(base_dir, start_filepath)}"
+    )
+    full_content = read_and_expand_includes(start_filepath, base_dir=base_dir)
     safe_print(f"Expanded content size: {len(full_content)} bytes")
 
     tags_data: list[TagData] = []  # Updated List[TagData]
@@ -176,12 +161,12 @@ def parse_jp_tag_list(
     # 正規表現パターン - 修正版
     # セクションヘッダは "+ タイトル" または "++ タイトル" の形式
     section_pattern = re.compile(r"^\+\+?\s+(.*?)(?:\[\[#.*)?$")
-    # タグ定義行は "* **[[[/system:page-tags/tag/タグ名|タグ名]]]** //(英語名)// - 説明" の形式
+    # タグ定義行は、行頭の任意の空白（半角・全角含む）＋* で始まるように修正
     tag_pattern = re.compile(
-        r"^\*\s+\*\*\[{3}/system:page-tags/tag/([^|]+)\|([^\]]+)\]{3}\*\*\s+(?://\(([^)]+)\)//\s+)?-\s*(.*)"
+        r"^[ \t\u3000]*\*[ \t\u3000]*\*\*\[\[\[/system:page-tags/tag/([^|]+)\|([^\]]+)\]\]\]\*\*[ \t\u3000]*(?://\(([^)]+)\)//[ \t\u3000]*)?-\s*(.*)"
     )
     # メタ情報行は "* // キー: 値 //" の形式
-    meta_pattern = re.compile(r"^\*\s+//\s*([^:]+):\s*(.*)//")
+    meta_pattern = re.compile(r"^[ \t\u3000]*\*[ \t\u3000]*//\s*([^:]+):\s*(.*)//")
 
     current_category: Category = create_root_category()
     stack: list[Category] = [current_category]  # Updated List[Category]
