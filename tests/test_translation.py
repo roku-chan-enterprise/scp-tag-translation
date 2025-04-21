@@ -11,7 +11,7 @@ import pytest
 
 # Define the path to the translation dictionary relative to the project root
 DICTIONARY_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "data", "dictionaries", "en_to_jp.json"
+    os.path.dirname(__file__), "..", "dictionaries", "en_to_jp.json"
 )
 
 # Load the translation dictionary

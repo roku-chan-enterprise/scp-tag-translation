@@ -1,0 +1,35 @@
+[
+  {
+    "name": "始のいろは",
+    "slug": "始のいろは",
+    "name_en": null,
+    "description": "アンソロジー「[/iroha-the-begining-hub 始のいろは]」。",
+    "category": "その他のタグ",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "scp漢字ドリル",
+    "slug": "scp漢字ドリル",
+    "name_en": null,
+    "description": "アンソロジー「[/scp-kanji-drill-hub SCP漢字ドリル]」。",
+    "category": "その他のタグ",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  },
+  {
+    "name": "t-arot",
+    "slug": "t-arot",
+    "name_en": null,
+    "description": "アンソロジー「[/tarot-in-a-caramel-box Tale - Artwork Resonance On Tarot]」。",
+    "category": "その他のタグ",
+    "meta": {
+      "related_tags": [],
+      "see_also": []
+    }
+  }
+]

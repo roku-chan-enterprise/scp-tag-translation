@@ -284,5 +284,9 @@ def parse_jp_tag_list(
         safe_print(f"An error occurred during JSON writing: {e}")
 
 
-if __name__ == "__main__":
+def main():
     parse_jp_tag_list()
+
+
+if __name__ == "__main__":
+    main()

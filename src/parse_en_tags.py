@@ -1,5 +1,6 @@
 import json
 import re
+import os
 from typing import TypeAlias  # TypeAlias をインポート
 
 # 型エイリアスを定義 (Python 3.10+ の記法)
@@ -27,6 +28,8 @@ def parse_tag_list(
     meta_pattern = re.compile(r"^\s*\*\s*//\s*([^:]+):\s*(.*)\s*//")
 
     try:
+        # 出力先ディレクトリを自動生成
+        os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
         with open(input_filepath, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
@@ -78,7 +81,6 @@ def parse_tag_list(
         # JSONファイルへの書き込み
         with open(output_filepath, "w", encoding="utf-8") as f:
             json.dump(tags_data, f, ensure_ascii=False, indent=2)
-
         print(f"Successfully parsed tags and saved to {output_filepath}")
 
     except FileNotFoundError:
