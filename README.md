@@ -19,7 +19,7 @@ SCP財団のタグを多言語翻訳するための静的ツールです。
 ## 使い方
 
 1. リポジトリをクローン or ダウンロード
-2. `index.html` と `data/dictionaries/dictionaries/` ディレクトリを同階層に配置
+2. `index.html` と `data/dictionaries/` ディレクトリを同階層に配置
 3. ブラウザで `index.html` を開く
 4. 翻訳元・翻訳先言語を選択 (現在は en→jp のみ選択可能)
 5. 翻訳したいタグを入力すると、自動で翻訳結果が表示されます
@@ -27,7 +27,7 @@ SCP財団のタグを多言語翻訳するための静的ツールです。
 
 ## 辞書ファイル
 
-- `data/dictionaries/dictionaries/en_to_jp.json` のように言語ペアごとにファイルを用意します
+- `data/dictionaries/en_to_jp.json` のように言語ペアごとにファイルを用意します
 - 非使用タグは値に `null` を設定し、ログ表示のみ行います
 - 未定義タグは辞書に含まれないため、ログで "(未定義)" と表示
 
@@ -38,5 +38,5 @@ SCP財団のタグを多言語翻訳するための静的ツールです。
 
 ## コントリビュート / ライセンス
 
-- Pull Request 大歓迎です。新タグ・新ペアを追加する際は、対応する JSON ファイルを `data/dictionaries/dictionaries/` に置いてください
+- Pull Request 大歓迎です。新タグ・新ペアを追加する際は、対応する JSON ファイルを `data/dictionaries/` に置いてください
 - 本ツールのソースコードは MIT ライセンスに準じます
