@@ -1,8 +1,8 @@
 import os
 import sys
 
-import wikidot
-from wikidot.common import exceptions
+import wikidot  # type: ignore
+from wikidot.common import exceptions  # type: ignore
 
 # このスクリプトが存在するディレクトリを取得
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -10,6 +10,12 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # 取得対象のページ情報 (サイトのUnix名, ページ名)
 TARGET_PAGES = [
     ("scp-jp", "tag-list"),
+    ("scp-jp", "fragment:tag-list-basic"),
+    ("scp-jp", "fragment:tag-list-series"),
+    ("scp-jp", "fragment:tag-list-universe"),
+    ("scp-jp", "fragment:tag-list-event"),
+    ("scp-jp", "fragment:tag-list-unused"),
+    ("scp-jp", "fragment:tag-list-faq"),
     ("05command", "tech-hub-tag-list"),
 ]
 
@@ -42,14 +48,21 @@ def retrieve_and_save_page(
         # 保存ファイル名を生成 (例: scp-jp_tag-list.txt)
         # フルネーム中の':'を'_'に置換するなど、ファイル名として安全な形式にする
         safe_page_name = page_fullname.replace(":", "_").replace("/", "_")
-        output_filename = f"{site_unix_name}_{safe_page_name}.txt"
-        output_filepath = os.path.join(SCRIPT_DIR, output_filename)
+        output_filename = f"{safe_page_name}.txt"
+        # 保存先ディレクトリをdata/raw/wikidot_sources配下に変更
+        output_dir = os.path.join(
+            SCRIPT_DIR, "..", "data", "raw", "wikidot_sources", site_unix_name
+        )
+        os.makedirs(output_dir, exist_ok=True)
+        output_filepath = os.path.join(output_dir, output_filename)
 
         # ファイルに保存 (UTF-8エンコーディング)
         with open(output_filepath, "w", encoding="utf-8") as f:
             f.write(page_source)
 
-        print(f"  成功: '{output_filename}' として保存しました。")
+        # 相対パスで表示
+        relative_path = os.path.relpath(output_filepath, SCRIPT_DIR)
+        print(f"  成功: '{relative_path}' として保存しました。")
         return True
 
     except exceptions.NotFoundException as e:
